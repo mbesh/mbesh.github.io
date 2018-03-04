@@ -1,0 +1,8 @@
+div.map {
+   height: 480px;
+}
+@media (min-width: 992px) {
+    div.map {
+        height: 320px;
+    }
+}
