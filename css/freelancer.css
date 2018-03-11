@@ -197,6 +197,13 @@ header.masthead h2 {
   margin-bottom: -15px;
 }
 
+.portfolio .nopop-item {
+  position: relative;
+  display: block;
+  max-width: 25rem;
+  margin-bottom: 15px;
+}
+
 .portfolio .portfolio-item {
   position: relative;
   display: block;
@@ -254,6 +261,11 @@ header.masthead h2 {
   font-size: 2rem;
 }
 
+.portfolio-modal .portfolio-modal-dialog p {
+  font-size: 22px;
+  text-align: justify;
+}
+
 @media (min-width: 768px) {
   .portfolio-modal .portfolio-modal-dialog {
     min-height: 100vh;
@@ -263,6 +275,15 @@ header.masthead h2 {
   .portfolio-modal .portfolio-modal-dialog h2 {
     font-size: 3rem;
   }
+  .portfolio-modal .portfolio-modal-dialog p {
+    font-size: 22px;
+  }
+}
+
+.greyscale {
+  -webkit-filter: grayscale(100%);
+  /* Safari 6.0 - 9.0 */
+  filter: grayscale(100%);
 }
 
 .floating-label-form-group {
@@ -331,11 +352,11 @@ form .row:first-child .floating-label-form-group {
 }
 
 a {
-  color: #708892;
+  color: #a0c9cf;
 }
 
 a:focus, a:hover, a:active {
-  color: #5a6d75;
+  color: #7eb6be;
 }
 
 .btn {
@@ -364,8 +385,8 @@ a:focus, a:hover, a:active {
 }
 
 .btn-primary:hover, .btn-primary:focus, .btn-primary:active {
-  background-color: #5a6d75;
-  border-color: #5a6d75;
+  background-color: #7eb6be;
+  border-color: #7eb6be;
 }
 
 .btn-secondary {
