@@ -327,6 +327,10 @@ header.masthead h2 {
   border-left: 1px solid #e9ecef;
 }
 
+p {
+  text-align: justify;
+}
+
 .floating-label-form-group-with-value label {
   top: 0;
   opacity: 1;

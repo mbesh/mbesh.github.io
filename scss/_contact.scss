@@ -36,7 +36,9 @@
     border-left: 1px solid $gray-200;
   }
 }
-
+p {
+  text-align: justify;
+}
 .floating-label-form-group-with-value {
   label {
     top: 0;
