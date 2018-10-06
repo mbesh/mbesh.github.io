@@ -2,24 +2,36 @@ header.masthead {
   padding-top: calc(2rem + 72px);
   padding-bottom: 0.5rem;
   h1 {
-    font-size: 3rem;
-    line-height: 3rem;
+    font-size: 2.75rem;
+    line-height: 2rem;
   }
   h2 {
     font-size: 1.3rem;
     @include body-font;
   }
+
+
 }
 @media (min-width: 992px) {
   header.masthead {
     padding-top: calc(2rem + 106px);
     padding-bottom: 1rem;
     h1 {
-      font-size: 4.75em;
-      line-height: 4rem;
+      font-size: 3.75em;
+      line-height: 3rem;
     }
     h2 {
       font-size: 1.75em;
+    }
+    a {
+      img.whitneylogo {
+        -webkit-transition: opacity 0.5s, background-color 0.5s; /* For Safari 3.1 to 6.0 */
+        transition: opacity 0.5s, background-color 0.5s;
+      }
+      img.whitneylogo:hover {
+        opacity: 0.25;
+        background-color: $tertiary;
+      }
     }
 
   }
