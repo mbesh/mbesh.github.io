@@ -8437,19 +8437,39 @@ var imageDiv = $("#imageDiv");
 var answersDiv = $("#answersDiv");
 var resultDiv = $("#resultDiv");
 var answerBulletTemplate = `
-    <input class="btn-check" type="radio" name="answer" id="PUT_ID" autocomplete="off">
-    <label class="btn btn-outline-success" for="PUT_ID">
+    <input class="btn-check" type="radio" name="answer" id="PUT_ID" autocomplete="off" style="display: none">
+    <label class="btn btn-outline-success btn-block" for="PUT_ID" style="white-space: normal">
       PUT_ANSWER
     </label><br/>`;
+
+function changeSelect(label) {
+    // Remove previous selects
+    $('label').each(function(i) {
+        var rb = $(this);
+        // keep incorrect
+        if (rb.css('background') == "rgb(220, 53, 69)") {
+            return;
+        }
+        rb.css('background', '');
+    });
+    // don't change background on incorrect answers
+    if (label.css('background') == "rgb(220, 53, 69)") {
+        return;
+    }
+    label.css('background', '#9e9')
+
+}
 
 function updateContentForQuestion(question) {
     questionDiv.html(toSentenceCase(question.q));
     if (question.i) {
+        imageDiv.css('display', '');
         imageDiv.html(`<img src="${question.i}" style="filter: drop-shadow(#aaa 0.5rem 0.5rem 5px)"/>`);
     } else {
         imageDiv.html(``);
+        imageDiv.css('display', 'none');
     }
-    answersDiv.html(``);
+    answersDiv.html(`Select an answer:<br/>`);
     resultDiv.html(``);
     for (var i = 0; i < question.as.length; i++) {
         var ans = question.as[i];
@@ -8458,6 +8478,10 @@ function updateContentForQuestion(question) {
         copyTemp = copyTemp.replace("PUT_ANSWER", ans);
         answersDiv.append(copyTemp);
     }
+    answersDiv.find('label').each(function(i) {
+        var jqLabel = $(this);
+        jqLabel.on('click', function() { changeSelect(jqLabel); });
+    });
 }
 
 function checkSelectedAnswer() {
@@ -8468,12 +8492,12 @@ function checkSelectedAnswer() {
     var answerId = selectedAnswer.attr('id');
     var selectedLabel = $(`label[for="${answerId}"]`)
     if (!isAnswerCorrect) {
-        resultDiv.html(`<h3>Incorrect, try again.</h3> ${currentQuestion.h}`);
+        resultDiv.html(`<h4>Incorrect, try again.</h4> ${currentQuestion.h}`);
         selectedLabel.css({ 'background': '#dc3545', 'color': '#ffffff', 'border-color': '#dc3545' });
         return;
     }
     selectedLabel.css({ 'background': '#28a745', 'color': '#ffffff' });
-    resultDiv.html(`<h3>Correct!</h3>${currentQuestion.e}`);
+    resultDiv.html(`<h4>Correct!</h4>${currentQuestion.e}`);
 }
 
 function nextQuestion() {
@@ -8481,6 +8505,9 @@ function nextQuestion() {
     console.log(`Next question ${currentQuestionIndex + 1} of ${totalQuestions}`);
     currentQuestion = questionMap.questions[questionIdArr[currentQuestionIndex]];
     updateContentForQuestion(currentQuestion);
+    $('html, body').animate({
+        scrollTop: $("#questionDiv").offset().top
+    }, 500);
 }
 
 function toSentenceCase(str) {
