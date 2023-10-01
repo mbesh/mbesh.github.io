@@ -8423,9 +8423,48 @@ var questionMap = {
     }
 };
 
+// Initialize vars
+
 var questionIdArr = Object.keys(questionMap.questions);
 var totalQuestions = questionIdArr.length;
 var currentQuestionIndex = Math.floor(Math.random() * questionIdArr.length);
 console.log(`Will start with question ${currentQuestionIndex + 1} of ${totalQuestions}`);
 var currentQuestion = questionMap.questions[questionIdArr[currentQuestionIndex]];
 console.log(currentQuestion);
+
+var questionDiv = $("#questionDiv");
+var imageDiv = $("#imageDiv");
+var answersDiv = $("#answersDiv");
+var resultDiv = $("#resultDiv");
+var answerBulletTemplate = `
+    <input class="btn-check" type="radio" name="answer" id="PUT_ID" autocomplete="off">
+    <label class="btn btn-outline-success" for="PUT_ID">
+      PUT_ANSWER
+    </label><br/>`;
+
+function updateContentForQuestion(question) {
+    questionDiv.html(question.q);
+    if (question.i) {
+        imageDiv.html(`<img src="${question.i}"/>`);
+    } else {
+        imageDiv.html(``);
+    }
+    answersDiv.html(``);
+    resultDiv.html(``);
+    for (var i=0; i <question.as.length; i++) {
+        var ans = question.as[i];
+        var copyTemp = (' ' + answerBulletTemplate).slice(1);
+        copyTemp = copyTemp.replace(/PUT_ID/g, "answer" + i);
+        copyTemp = copyTemp.replace("PUT_ANSWER", ans);
+        answersDiv.append(copyTemp);
+    }
+}
+
+function checkSelectedAnswer() {
+    var isAnswerCorrect = $('input[type="radio"]:checked') ;
+}
+
+updateContentForQuestion(currentQuestion);
+
+var checkAnswerButton = $("#checkButton");
+checkAnswerButton.on('click', )
