@@ -8443,15 +8443,15 @@ var answerBulletTemplate = `
     </label><br/>`;
 
 function updateContentForQuestion(question) {
-    questionDiv.html(question.q);
+    questionDiv.html(toSentenceCase(question.q));
     if (question.i) {
-        imageDiv.html(`<img src="${question.i}"/>`);
+        imageDiv.html(`<img src="${question.i}" style="filter: drop-shadow(#aaa 0.5rem 0.5rem 5px)"/>`);
     } else {
         imageDiv.html(``);
     }
     answersDiv.html(``);
     resultDiv.html(``);
-    for (var i=0; i <question.as.length; i++) {
+    for (var i = 0; i < question.as.length; i++) {
         var ans = question.as[i];
         var copyTemp = (' ' + answerBulletTemplate).slice(1);
         copyTemp = copyTemp.replace(/PUT_ID/g, "answer" + i);
@@ -8461,10 +8461,37 @@ function updateContentForQuestion(question) {
 }
 
 function checkSelectedAnswer() {
-    var isAnswerCorrect = $('input[type="radio"]:checked') ;
+    var selectedAnswer = $('input[type="radio"]:checked');
+    var radios = $('input[type="radio"]');
+    var correctAnswerIndex = currentQuestion.a - 1;
+    var isAnswerCorrect = radios[correctAnswerIndex].checked;
+    var answerId = selectedAnswer.attr('id');
+    var selectedLabel = $(`label[for="${answerId}"]`)
+    if (!isAnswerCorrect) {
+        resultDiv.html(`<h3>Incorrect, try again.</h3> ${currentQuestion.h}`);
+        selectedLabel.css({ 'background': '#dc3545', 'color': '#ffffff', 'border-color': '#dc3545' });
+        return;
+    }
+    selectedLabel.css({ 'background': '#28a745', 'color': '#ffffff' });
+    resultDiv.html(`<h3>Correct!</h3>${currentQuestion.e}`);
+}
+
+function nextQuestion() {
+    currentQuestionIndex = Math.floor(Math.random() * questionIdArr.length);
+    console.log(`Next question ${currentQuestionIndex + 1} of ${totalQuestions}`);
+    currentQuestion = questionMap.questions[questionIdArr[currentQuestionIndex]];
+    updateContentForQuestion(currentQuestion);
+}
+
+function toSentenceCase(str) {
+    return str.toLowerCase().replace(/(^\s*\w|[\.\!\?]\s*\w)/g,
+        function (c) { return c.toUpperCase() });
 }
 
 updateContentForQuestion(currentQuestion);
 
 var checkAnswerButton = $("#checkButton");
-checkAnswerButton.on('click', )
+checkAnswerButton.on('click', checkSelectedAnswer)
+
+var nextQuestionButton = $("#nextButton");
+nextQuestionButton.on('click', nextQuestion);
