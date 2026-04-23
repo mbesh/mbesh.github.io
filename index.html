@@ -1,281 +1,553 @@
 <!DOCTYPE html>
 <html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mike Beshai — Software Engineer</title>
+  <meta name="description" content="Mike Beshai — Software Engineer. Building things that matter.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400&family=Instrument+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:           #0c0b09;
+      --surface:      #131109;
+      --border:       #23200f;
+      --border-light: #2e2a18;
+      --text:         #ede8df;
+      --text-muted:   #6a6358;
+      --accent:       #c47a3a;
+      --accent-light: #e09458;
+      --mono:  'JetBrains Mono', monospace;
+      --serif: 'Cormorant Garamond', Georgia, serif;
+      --sans:  'Instrument Sans', sans-serif;
+    }
 
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    <title>Megan ❤️ Mike</title>
+    html { scroll-behavior: smooth; }
 
-    <!-- Bootstrap core CSS -->
-    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-weight: 300;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
 
-    <!-- Custom fonts for this template -->
-    <link href="vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet" type="text/css">
+    /* ─── NOISE OVERLAY ─── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
 
-    <!-- Plugin CSS -->
-    <link href="vendor/magnific-popup/magnific-popup.css" rel="stylesheet" type="text/css">
+    /* ─── NAV ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 1.6rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-    <!-- Custom styles for this template -->
-    <link href="css/freelancer.min.css" rel="stylesheet">
+    nav::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(12,11,9,0.95) 60%, transparent);
+      z-index: -1;
+    }
 
-  </head>
+    .nav-logo {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      text-decoration: none;
+    }
 
-  <body id="page-top">
-    <!-- Navigation -->  
-    <nav class="navbar navbar-expand-lg bg-secondary fixed-top text-uppercase" id="mainNav">
-      <div class="container">
-        <button class="navbar-toggler text-uppercase bg-primary text-white rounded" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
-          Menu
-          <i class="fa fa-bars"></i>
-        </button> 
-        <div class="collapse navbar-collapse" id="navbarResponsive">
-          <ul class="navbar-nav align-self-center mx-auto">
-            <li class="nav-item mx-0 mx-lg-1">
-              <a class="nav-link py-3 px-0 px-lg-3 rounded js-scroll-trigger" href="#portfolio">Our Story</a>
-            </li>
-            <li class="nav-item mx-0 mx-lg-1">
-              <a class="nav-link py-3 px-0 px-lg-3 rounded js-scroll-trigger" href="#dinner">Feast at Beast</a>
-            </li>
-            <li class="nav-item mx-0 mx-lg-1">
-              <a class="nav-link py-3 px-0 px-lg-3 rounded js-scroll-trigger" href="#contact">Playing in Portlandia</a>
-            </li>
-            <li class="nav-item mx-0 mx-lg-1">
-              <a class="nav-link py-3 px-0 px-lg-3 rounded js-scroll-trigger" href="#registry">Registry</a>
-            </li>
-            <li class="nav-item mx-0 mx-lg-1">
-              <a class="nav-link py-3 px-0 px-lg-3 rounded js-scroll-trigger gold" href="whitney.html">Photos</a>
-            </li><hr class="star-light">
-          </ul>
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-decoration: none;
+      position: relative;
+      transition: color 0.2s;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -2px; left: 0;
+      width: 0; height: 1px;
+      background: var(--accent);
+      transition: width 0.3s ease;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a:hover::after { width: 100%; }
+
+    /* ─── HERO ─── */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 9rem 3rem 5rem;
+      position: relative;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 2.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.3s forwards;
+    }
+
+    .hero-name {
+      font-family: var(--serif);
+      font-weight: 300;
+      font-size: clamp(5.5rem, 15vw, 15rem);
+      line-height: 0.86;
+      letter-spacing: -0.025em;
+      margin-bottom: 3rem;
+    }
+
+    .hero-name .line1 {
+      display: block;
+      opacity: 0;
+      animation: fadeUp 1s ease 0.5s forwards;
+    }
+
+    .hero-name .line2 {
+      display: block;
+      padding-left: clamp(2.5rem, 9vw, 10rem);
+      color: var(--accent);
+      opacity: 0;
+      animation: fadeUp 1s ease 0.75s forwards;
+    }
+
+    .hero-rule {
+      width: clamp(3rem, 8vw, 6rem);
+      height: 1px;
+      background: var(--border-light);
+      margin-bottom: 2rem;
+      opacity: 0;
+      animation: fadeIn 0.8s ease 1.1s forwards;
+    }
+
+    .hero-tagline {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 1.2s forwards;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 7px;
+      height: 1em;
+      background: var(--accent);
+      vertical-align: text-bottom;
+      animation: blink 1.1s step-end infinite;
+    }
+
+    .hero-scroll {
+      position: absolute;
+      bottom: 3rem; left: 3rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      opacity: 0;
+      animation: fadeIn 1s ease 1.7s forwards;
+    }
+
+    .hero-scroll::before {
+      content: '';
+      display: block;
+      width: 36px;
+      height: 1px;
+      background: var(--border-light);
+    }
+
+    /* ─── SECTION COMMON ─── */
+    .section-label {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 5rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .section-label::after {
+      content: '';
+      height: 1px;
+      background: var(--border);
+      width: 5rem;
+    }
+
+    /* ─── ABOUT ─── */
+    #about {
+      padding: 8rem 3rem 8rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0 5rem;
+      align-items: start;
+    }
+
+    .about-monogram {
+      font-family: var(--serif);
+      font-size: clamp(9rem, 20vw, 20rem);
+      font-weight: 300;
+      line-height: 1;
+      letter-spacing: -0.06em;
+      color: transparent;
+      -webkit-text-stroke: 1px #5a5235;
+      user-select: none;
+      margin-top: -1.5rem;
+      padding-right: 1rem;
+    }
+
+    .about-content h2 {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 4.5vw, 3.8rem);
+      font-weight: 300;
+      line-height: 1.12;
+      letter-spacing: -0.015em;
+      margin-bottom: 2.2rem;
+    }
+
+    .about-content h2 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .about-content p {
+      font-size: 0.95rem;
+      line-height: 1.85;
+      color: var(--text-muted);
+      margin-bottom: 1.3rem;
+      max-width: 52ch;
+    }
+
+    .about-content p strong {
+      color: var(--text);
+      font-weight: 400;
+    }
+
+    .about-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 2.5rem;
+    }
+
+    .tag {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 0.32rem 0.85rem;
+      text-transform: uppercase;
+      cursor: default;
+      transition: border-color 0.25s, color 0.25s;
+    }
+
+    .tag:hover {
+      border-color: var(--accent);
+      color: var(--accent-light);
+    }
+
+    /* ─── CONNECT ─── */
+    #connect {
+      padding: 6rem 3rem 10rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .connect-links { display: flex; flex-direction: column; }
+
+    .connect-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 2.2rem 0;
+      border-top: 1px solid var(--border);
+      text-decoration: none;
+      color: var(--text);
+      transition: padding-left 0.35s ease;
+    }
+
+    .connect-link:last-child { border-bottom: 1px solid var(--border); }
+
+    .connect-link:hover { padding-left: 1.8rem; }
+    .connect-link:hover .link-title { color: var(--accent); }
+    .connect-link:hover .link-arrow {
+      transform: translate(5px, -5px);
+      color: var(--accent);
+    }
+
+    .link-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .link-label {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .link-title {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 300;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      transition: color 0.25s;
+    }
+
+    .link-url {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+
+    .link-arrow {
+      font-size: 1.4rem;
+      color: var(--border-light);
+      transition: transform 0.25s ease, color 0.25s;
+      flex-shrink: 0;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      padding: 2rem 3rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    footer p {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+
+    /* ─── SCROLL REVEAL ─── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 768px) {
+      nav { padding: 1.4rem 1.5rem; }
+      .nav-links { gap: 1.5rem; }
+
+      #hero { padding: 8rem 1.5rem 4rem; }
+      .hero-scroll { left: 1.5rem; bottom: 2rem; }
+
+      #about { padding: 5rem 1.5rem 6rem; }
+      .about-grid { grid-template-columns: 1fr; }
+      .about-monogram { display: none; }
+
+      #connect { padding: 5rem 1.5rem 8rem; }
+
+      footer {
+        padding: 1.5rem;
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .nav-links li:not(:last-child) { display: none; }
+      .link-title { font-size: 2.4rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="#hero" class="nav-logo">mb_</a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#connect">Connect</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <p class="hero-eyebrow">Software Engineer &mdash; Cloud Infrastructure</p>
+    <h1 class="hero-name">
+      <span class="line1">Mike</span>
+      <span class="line2">Beshai</span>
+    </h1>
+    <div class="hero-rule"></div>
+    <p class="hero-tagline">
+      <span>Building things that matter</span>
+      <span class="cursor"></span>
+    </p>
+    <p class="hero-scroll">Scroll to explore</p>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <p class="section-label reveal">01 — About</p>
+    <div class="about-grid">
+      <div class="about-monogram reveal">MB</div>
+      <div class="about-content reveal" style="transition-delay: 0.1s">
+        <h2>Technical leader,<br><em>systems thinker.</em></h2>
+        <p>
+          I'm <strong>Mike Beshai</strong>, a software engineer with a passion for distributed systems and cloud infrastructure. At <strong>Oracle Cloud Infrastructure</strong>, I've spent nearly seven years building and shipping the File Storage Service — a large-scale, production distributed system used by thousands of cloud customers.
+        </p>
+        <p>
+          Operational excellence isn't an afterthought for me — it's a design principle. I've led teams through the full arc of building cloud services: architecture, implementation, on-call, and the unglamorous work of keeping things reliable at scale.
+        </p>
+        <p>
+          Earlier I built backend systems at <strong>Udacity</strong> in Mountain View and scaled data infrastructure at <strong>Loblaw Digital</strong> in Toronto. I've shipped production software in Go, Python, Java, and Node across a range of domains — and I lead with that same hands-on perspective.
+        </p>
+        <div class="about-tags">
+          <span class="tag">Engineering Leadership</span>
+          <span class="tag">Cloud / OCI</span>
+          <span class="tag">Distributed Systems</span>
+          <span class="tag">File Storage</span>
+          <span class="tag">Go</span>
+          <span class="tag">Python</span>
+          <span class="tag">Java</span>
+          <span class="tag">AWS</span>
         </div>
-      </div>
-    </nav>
-
-    <!-- Header -->
-    <header class="masthead bg-primary text-white text-center">
-      <div class="container">
-        <a href="whitney.html"><img class="img-fluid mb-5 d-block mx-auto whitneylogo" src="img/mtwhitney-500px.png" alt=""></a>
-        <h1 class="text-uppercase mb-0">October 14, 2018</sup></h1>
-        <hr class="star-light">
-        <h2 class="font-weight-light mb-0"></h2>
-      </div>
-    </header>
-
-    <!-- Portfolio Grid Section --> 
-    <section class="portfolio" id="portfolio">
-      <div class="container">
-        <h2 class="text-center text-uppercase text-secondary mb-0">Our Story</h2>
-        <hr class="star-dark mb-5">
-        <div class="row">
-          <div class="col-md-6 col-lg-4">
-            <div>
-              <a class="portfolio-item d-block mx-auto" href="#portfolio-modal-1">
-                <div class="portfolio-item-caption d-flex position-absolute h-100 w-100">
-                  <div class="portfolio-item-caption-content my-auto w-100 text-center text-white">
-                    <i class="fa fa-list-alt fa-3x"></i>
-                  </div>
-                </div>
-                <img class="img-fluid" src="img/IMG_0023.jpg" alt="">
-              </a>
-            </div>
-            <div class="nopop-item d-block mx-auto">
-              <div class="d-flex position-absolute h-100 w-100">
-                <div class="portfolio-item-caption-content my-auto w-100 text-center text-white">
-                </div>
-              </div>
-              <img class="img-fluid" src="img/IMG_0061.jpg" alt="">
-            </div>
-          </div>
-          <div class="col-md-6 col-lg-4">
-            <div class="nopop-item d-block mx-auto">
-              <div class="d-flex position-absolute h-100 w-100">
-                <div class="portfolio-item-caption-content my-auto w-100 text-center text-white">
-                </div>
-              </div>
-              <img class="img-fluid" src="img/IMG_0006.jpg" alt="">
-            </div>
-            <div>
-              <a class="portfolio-item d-block mx-auto" href="#portfolio-modal-5">
-                <div class="portfolio-item-caption d-flex position-absolute h-100 w-100">
-                  <div class="portfolio-item-caption-content my-auto w-100 text-center text-white">
-                    <i class="fa fa-list-alt fa-3x"></i>
-                  </div>
-                </div>
-                <img class="img-fluid" src="img/IMG_0032.jpg" alt="">
-              </a>
-            </div>
-          </div>
-          <div class="col-md-6 col-lg-4">
-            <a class="portfolio-item d-block mx-auto" href="#portfolio-modal-3">
-              <div class="portfolio-item-caption d-flex position-absolute h-100 w-100">
-                <div class="portfolio-item-caption-content my-auto w-100 text-center text-white">
-                  <i class="fa fa-list-alt fa-3x"></i>
-                </div>
-              </div>
-              <img class="img-fluid" src="img/IMG_0018.jpg" alt="">
-            </a>
-            <div class="nopop-item d-block mx-auto">
-              <div class="d-flex position-absolute h-100 w-100">
-                <div class="portfolio-item-caption-content my-auto w-100 text-center text-white">
-                </div>
-              </div>
-              <img class="img-fluid" src="img/cropimg0039.jpg" alt="">
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Location Section -->
-    <section class="bg-primary text-white mb-0" id="dinner">
-      <div class="container">
-        <h2 class="text-center text-uppercase text-white">Feast at Beast</h2>
-        <hr class="star-light mb-5">
-        <div class="row">
-          <div class="col-lg-4 ml-auto">
-            <div id="map" class="map"></div>
-          </div>
-          <div class="col-lg-4 mr-auto">
-            <p>As with our relationship, we are kicking off our marriage with a hearty and celebratory feast.</p>
-            <p>Please join us on Sunday, October 14, 2018, for a feast at Beast, consisting of six courses including wine pairings.</p>
-            <p>Dinner service will begin promptly at 7:00 p.m., so please plan your transportation and parking accordingly.</p> 
-            <p>The restaurant is located in Northeast Portland near the Alberta Arts District at the intersection of Killingsworth Street and 30th Avenue. We recommend TriMet or travelling by foot or bicycle for maximum joy, the environment, and ease of parking.</p>
-            <p>Beast is the creation of <a href="http://www.beastpdx.com/about/">Chef Naomi Pomeroy</a>, who was born and raised in Megan’s hometown of Corvallis, Oregon.  To get an idea of the cuisine, check out a sample <a href="http://www.beastpdx.com/about-menu/">menu</a>.</p>
-            <div class="img-fluid beast-logo"><a href="http://www.beastpdx.com/"><img src="img/beastlogo.png" class="mx-auto d-block" alt="Beast Website"></a></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Portlandia Section -->
-    <section id="contact">
-      <div class="container">
-        <h2 class="text-center text-uppercase text-secondary mb-0">Playing in Portlandia</h2>
-        <hr class="star-dark mb-5">
-        <div class="row">
-          <div class="col-lg-8 mx-auto">
-            <p>It is impossible to talk about Portland without mentioning all of the amazing food, coffee, beer, and wine prepared with ingredients proudly and lovingly grown in the Pacific Northwest. &nbsp;Although everyone should enjoy a spooky treat from <a href="https://www.voodoodoughnut.com/">Voodoo Doughnuts</a> at some point in their life, Megan insists the best donuts are at <a href="http://www.bluestardonuts.com/">Blue Star Donuts</a>. &nbsp;When it’s time for lunch, don’t miss the amazing falafels from <a href="https://www.eatwolfandbears.com/">Wolf &amp; Bear’s</a> or choose your own adventure by stopping by one of the many <a href="http://www.foodcartsportland.com/maps/">pods of food trucks</a> the city is famous for. &nbsp;Pick a coffee shop at random and you are sure to be impressed, we especially recommend <a href="https://www.heartroasters.com/">Heart Coffee Roasters</a> and <a href="http://www.baristapdx.com/">Barista</a> as well as <a href="http://www.townshendstea.com/">Townshend’s Tea</a> (try the Kashmiri Chai or Matejuana, which does not actually contain marijuana).</p>
-            <p>Fortunately, Portland is also an extremely walkable city, so you can easily atone for your gluttony in between stops. &nbsp;Get some stair climbing in while you peruse the many floors of books at <a href="http://www.powells.com/">Powell’s City of Books</a>. &nbsp;Take advantage of the <a href="http://www.oregonlive.com/travel/index.ssf/2016/05/the_7_most_iconic_hikes_in_por.html">many miles of trails</a> in Forest Park, Washington Park, or Mt. Tabor Park or stroll the many corridors of the <a href="https://portlandartmuseum.org/">Portland Art Museum</a> or the <a href="https://omsi.edu/">Oregon Museum of Science and Industry</a> (which can now be accessed on foot via the <a href="https://trimet.org/tilikum/">Tilikum Bridge</a>).</p>
-            <p>Once you have gotten your steps in, quench your thirst at <a href="https://www.belmont-station.com/">Belmont Station</a>, <a href="https://hairofthedog.com/">Hair of the Dog Brewery</a>, or <a href="https://basecampbrewingco.com/">Base Camp Brewing</a>. &nbsp;Although <a href="https://www.deschutesbrewery.com/pubs/portland/">Deschutes</a> is a classic, you can get it at the store, so Megan recommends checking out the brewery launched by one of its former brewmasters instead: <a href="http://eclipticbrewing.com/">Ecliptic Brewing</a>. &nbsp;If beer is not your thing, grab a drink at <a href="http://www.clydecommon.com/">Clyde Common</a> or cool off in the subterranean wine tasting room at <a href="http://lescavespdx.com/">Les Caves</a>.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Registry -->
-    <section id="registry" class="bg-primary text-white mb-0">
-      <div class="container">
-        <h2 class="text-center text-uppercase text-white">Registry</h2>
-        <hr class="star-light mb-5">
-        <div class="row">
-          <div class="col-lg-8 mx-auto text-center">
-            <p>Our registry can be found at <a href="https://www.zola.com/registry/msquared2018">Zola</a>.</p>
-            <a class="zola-registry-embed" href="https://www.zola.com/registry/msquared2018" data-registry-key="msquared2018">Our Zola Wedding Registry</a><script>!function(e,t,n){var s,a=e.getElementsByTagName(t)[0];e.getElementById(n)||(s=e.createElement(t),s.id=n,s.async=!0,s.src="https://widget.zola.com/js/widget.js",a.parentNode.insertBefore(s,a))}(document,"script","zola-wjs");</script>
-        </div>
-      </div>
-    </section>
-
-    <div class="copyright py-4 text-center text-white">
-      <div class="container">
-        <small>Copyright &copy; msquared.info 2018</small>
       </div>
     </div>
+  </section>
 
-    <!-- Scroll to Top Button (Only visible on small and extra-small screen sizes) -->
-    <div class="scroll-to-top d-lg-none position-fixed ">
-      <a class="js-scroll-trigger d-block text-center text-white rounded" href="#page-top">
-        <i class="fa fa-chevron-up"></i>
+  <!-- CONNECT -->
+  <section id="connect">
+    <p class="section-label reveal">02 — Connect</p>
+    <div class="connect-links">
+      <a href="https://github.com/mbesh" target="_blank" rel="noopener noreferrer" class="connect-link reveal" style="transition-delay: 0.05s">
+        <div class="link-meta">
+          <span class="link-label">Code &amp; Projects</span>
+          <span class="link-title">GitHub</span>
+          <span class="link-url">github.com/mbesh</span>
+        </div>
+        <span class="link-arrow">↗</span>
+      </a>
+      <a href="https://linkedin.com/in/mike-beshai-88617b69" target="_blank" rel="noopener noreferrer" class="connect-link reveal" style="transition-delay: 0.12s">
+        <div class="link-meta">
+          <span class="link-label">Professional Network</span>
+          <span class="link-title">LinkedIn</span>
+          <span class="link-url">linkedin.com/in/mike-beshai-88617b69</span>
+        </div>
+        <span class="link-arrow">↗</span>
       </a>
     </div>
+  </section>
 
-    <!-- Portfolio Modals -->
+  <footer>
+    <p>© 2026 Mike Beshai</p>
+    <p>mikebeshai.com</p>
+  </footer>
 
-    <!-- Portfolio Modal 1 -->
-    <div class="portfolio-modal mfp-hide" id="portfolio-modal-1">
-      <div class="portfolio-modal-dialog bg-white">
-        <a class="close-button d-none d-md-block portfolio-modal-dismiss" href="#">
-          <i class="fa fa-3x fa-times"></i>
-        </a>
-        <div class="container text-center">
-          <div class="row">
-            <div class="col-lg-8 mx-auto">
-              <h2 class="text-secondary text-uppercase mb-0">how we met</h2>
-              <hr class="star-dark mb-5">
-              <p class="mb-5">Mike and Megan first crossed paths at a housewarming barbecue in Santa Clara, California. &nbsp;Megan had moved just a few streets away from a townhouse, the Roost, to a house full of surfing Canadians. &nbsp;After a morning of surfing in nearby Santa Cruz, Megan’s housemates hosted a housewarming barbecue, inviting their friend Mike who had just moved to the Bay Area from Toronto.  
-              </p>
-              <a class="btn btn-primary btn-lg rounded-pill portfolio-modal-dismiss" href="#">
-                <i class="fa fa-close"></i>
-                Close</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+  <script>
+    // Scroll reveal
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
 
-    <!-- Portfolio Modal 3 -->
-    <div class="portfolio-modal mfp-hide" id="portfolio-modal-3">
-      <div class="portfolio-modal-dialog bg-white">
-        <a class="close-button d-none d-md-block portfolio-modal-dismiss" href="#">
-          <i class="fa fa-3x fa-times"></i>
-        </a>
-        <div class="container text-center">
-          <div class="row">
-            <div class="col-lg-8 mx-auto">
-              <h2 class="text-secondary text-uppercase mb-0">He Said Yes</h2>
-              <hr class="star-dark mb-5">
-              <p class="mb-5">Never the silent type, Megan proposed and Mike said yes. Although they eventually purchased a ring and a super burrito to commemorate the occasion, Megan and Mike otherwise left the wedding planning to the National Park Service. &nbsp;They entered the lottery to obtain permits to climb Mt. Whitney and were married in a private ceremony on the summit this fall.</p>
-              <a class="btn btn-primary btn-lg rounded-pill portfolio-modal-dismiss" href="#">
-                <i class="fa fa-close"></i>
-                Close</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
-    <!-- Portfolio Modal 5 -->
-    <div class="portfolio-modal mfp-hide" id="portfolio-modal-5">
-      <div class="portfolio-modal-dialog bg-white">
-        <a class="close-button d-none d-md-block portfolio-modal-dismiss" href="#">
-          <i class="fa fa-3x fa-times"></i>
-        </a>
-        <div class="container text-center">
-          <div class="row">
-            <div class="col-lg-8 mx-auto">
-              <h2 class="text-secondary text-uppercase mb-0">Yay Area Romance</h2>
-              <hr class="star-dark mb-5">
-              <p class="mb-5">Over the course of many shared meals and adventures, from their first date at a ramen shop to the countless Clif bars they split on the chairlift, their mutual love, respect, and admiration for each other grew. &nbsp;In between eating tacos al pastor at Metro Balderas and skiing, Megan and Mike supported each other through job changes, moves, sports injuries, and an addiction to spreadsheets and organizational software (Megan’s).</p>
-              <a class="btn btn-primary btn-lg rounded-pill portfolio-modal-dismiss" href="#">
-                <i class="fa fa-close"></i>
-                Close</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    // Nav active state
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-links a');
 
-    <!-- Bootstrap core JavaScript -->
-    <script src="vendor/jquery/jquery.min.js"></script>
-    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    const navObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          navLinks.forEach(link => {
+            const active = link.getAttribute('href') === `#${entry.target.id}`;
+            link.style.color = active ? 'var(--text)' : '';
+          });
+        }
+      });
+    }, { threshold: 0.45 });
 
-    <!-- Plugin JavaScript -->
-    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
-    <script src="vendor/magnific-popup/jquery.magnific-popup.min.js"></script>
-
-    <!-- Contact Form JavaScript -->
-    <script src="js/jqBootstrapValidation.js"></script>
-    <script src="js/contact_me.js"></script>
-
-    <!-- Custom scripts for this template -->
-    <script src="js/freelancer.min.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDo5KA53mUVFeBf1H7VYBu0DcV3HKD35mo"></script>
-
-    <script src="js/map.js"></script>
-
-  </body>
-
+    sections.forEach(s => navObserver.observe(s));
+  </script>
+</body>
 </html>
