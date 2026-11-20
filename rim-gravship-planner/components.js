@@ -79,12 +79,13 @@ export function pumpMount(c){
     facingTile:{x:c.x+dx,y:c.y+dy}};
 }
 export function componentCells(c){const b=componentBounds(c),cells=[];for(let y=b.y;y<b.y+b.height;y++)for(let x=b.x;x<b.x+b.width;x++)cells.push(`${x},${y}`);return cells;}
-// Rotation 0 exhausts south, then west, north and east (clockwise).
+// Sprite names describe thrust/facing, not exhaust. The nozzle exhausts in the
+// opposite direction: south-facing art clears north, west clears east, etc.
 export function exhaustCells(c){
   const def=componentDefinition(c.type),b=componentBounds(c),cells=[];
   if(!def.exhaust)return cells;
   for(let d=0;d<def.exhaust;d++)for(let w=0;w<def.width;w++){
-    const [x,y]=b.rotation===0?[b.x+w,b.y+b.height+d]:b.rotation===1?[b.x-1-d,b.y+w]:b.rotation===2?[b.x+w,b.y-1-d]:[b.x+b.width+d,b.y+w];
+    const [x,y]=b.rotation===0?[b.x+w,b.y-1-d]:b.rotation===1?[b.x+b.width+d,b.y+w]:b.rotation===2?[b.x+w,b.y+b.height+d]:[b.x-1-d,b.y+w];
     cells.push(`${x},${y}`);
   }
   return cells;
