@@ -1,0 +1,91 @@
+// Wiki dimensions and stated maxima checked 2026-11-20.
+// Footprints and limits: https://rimworldwiki.com/wiki/Gravship and linked component pages.
+// New component anchors are the top-left tile of their rotated footprint.
+export const COMPONENTS = [
+  {id:'autodoor',name:'Autodoor',width:1,height:1,rotate:true,rotationCount:2,group:'Structure',symbol:'AD',color:'#aeb8b4',wiki:'Autodoor',note:'Powered door. Choose north/south or east/west; needs substructure.'},
+  {id:'small-tank',name:'Small chemfuel tank',width:2,height:2,rotate:true,group:'Flight',symbol:'250',color:'#bea879',wiki:'Small_chemfuel_tank',note:'Stores 250 chemfuel.'},
+  {id:'large-tank',name:'Large chemfuel tank',width:3,height:3,rotate:true,group:'Flight',symbol:'750',color:'#bea879',wiki:'Large_chemfuel_tank',note:'Stores 750 chemfuel.'},
+  {id:'small-thruster',name:'Small thruster',width:1,height:2,rotate:true,limit:4,exhaust:5,group:'Flight',symbol:'ST',color:'#d3ac84',wiki:'Small_thruster',note:'Keep its 1 × 5 exhaust area clear of floor and structures.'},
+  {id:'large-thruster',name:'Large thruster',width:2,height:2,rotate:true,limit:6,exhaust:7,group:'Flight',symbol:'LT',color:'#d3ac84',wiki:'Large_thruster',note:'Keep its 2 × 7 exhaust area clear of floor and structures.'},
+  {id:'pilot-console',name:'Pilot console',width:3,height:2,rotate:true,group:'Flight',symbol:'PC',color:'#97c4b5',wiki:'Pilot_console',note:'Required to pilot the ship.'},
+  {id:'signal-jammer',name:'Signal jammer',width:2,height:2,group:'Upgrades',symbol:'SJ',color:'#b1abd2',wiki:'Signal_jammer',note:'Enables approaching heavily defended landing sites.'},
+  {id:'power-cell',name:'Gravcore power cell',width:1,height:1,group:'Upgrades',symbol:'GC',color:'#b7c783',wiki:'Gravcore_power_cell',note:'Generates 1,200 W.'},
+  {id:'fuel-optimizer',name:'Fuel optimizer',width:2,height:2,limit:2,group:'Upgrades',symbol:'FO',color:'#c6bb87',wiki:'Fuel_optimizer',note:'Each reduces fuel consumption by 30%.'},
+  {id:'shield-generator',name:'Gravship shield generator',width:3,height:3,limit:2,engineField:true,group:'Upgrades',symbol:'SG',color:'#9ebee1',wiki:'Gravship_shield_generator',note:'Must be inside the original engine field.'},
+  {id:'subpersona-core',name:'Pilot subpersona core',width:1,height:1,limit:2,group:'Upgrades',symbol:'SC',color:'#c0a1ca',wiki:'Pilot_subpersona_core',note:'Each adds 15% launch ritual quality.'},
+  {id:'oxygen-pump',name:'Oxygen pump',width:1,height:1,rotate:true,wallMounted:true,group:'Life support',symbol:'O₂',color:'#ed963e',wiki:'Oxygen_pump',note:'Mount on a hull edge facing a non-hull tile. Needs substructure beneath the wall.'},
+  {id:'vac-barrier',name:'Vac barrier',width:1,height:1,rotate:true,group:'Life support',symbol:'VB',color:'#93caca',wiki:'Vac_barrier',note:'A powered, passable air barrier.'},
+  {id:'heater',name:'Heater',width:1,height:1,group:'Life support',symbol:'H',color:'#d5a08d',wiki:'Heater',note:'Warms enclosed rooms.'},
+];
+// South-facing console art uses the 3-wide by 2-deep orientation of its 2 × 3 footprint.
+const directional=prefix=>({south:`${prefix}_south.png`,north:`${prefix}_north.png`,east:`${prefix}_east.png`});
+const SPRITES={
+  'autodoor':{south:'Autodoor.png'},
+  'small-tank':directional('ChemfuelTank'),
+  'large-tank':directional('LargeChemfuelTank'),
+  'small-thruster':directional('SmallThruster'),
+  'large-thruster':directional('LateralThruster'),
+  'pilot-console':directional('PilotConsole'),
+  'signal-jammer':{south:'SignalJammer_south.png'}, // Wiki explicitly marks this non-rotatable.
+  'power-cell':{south:'GravcorePowerCell.png'},
+  'fuel-optimizer':{south:'FuelOptimizer_north.png'},
+  'shield-generator':{south:'GravshipShieldGenerator.png'},
+  'subpersona-core':{south:'PilotSubpersonaCore.png'},
+  'vac-barrier':{south:'VacBarrier.png',north:'VacBarrier.png',east:'VacBarrier_east-clean.png'},
+  'heater':{south:'Heater.png'},
+};
+for(const c of COMPONENTS)c.sprites=SPRITES[c.id]||{south:`components/${c.id}.svg`};
+export const ROTATIONS=['South','West','North','East'];
+export function componentSprite(c){
+  const def=componentDefinition(c.type),rotation=componentBounds(c).rotation,sprites=def.sprites;
+  const direction=ROTATIONS[rotation].toLowerCase();
+  if(sprites[direction])return {file:sprites[direction],flip:false,turn:0};
+  if(direction==='west'&&sprites.east)return {file:sprites.east,flip:true,turn:0};
+  return {file:sprites.south,flip:false,turn:rotation};
+}
+// Source rectangles exclude transparent padding; draw rectangles are in tile units.
+// The north/south arch reaches both hull sides and overhangs the cell above.
+export function componentVisual(c){
+  if(c.type!=='vac-barrier')return null;
+  return componentBounds(c).rotation%2
+    ? {source:[501,86,316,1049],x:.35,y:-.12,width:.36,height:1.16}
+    : {source:[15,19,97,78],x:-.02,y:-.12,width:1.04,height:1.04*78/97};
+}
+export function barrierJoins(c,dx,dy){
+  if(c.type!=='vac-barrier')return false;
+  return componentBounds(c).rotation%2?dx===0&&Math.abs(dy)===1:dy===0&&Math.abs(dx)===1;
+}
+export const COMPONENT_BY_ID=Object.fromEntries(COMPONENTS.map(c=>[c.id,Object.freeze(c)]));
+export const componentDefinition=id=>COMPONENT_BY_ID[id];
+export function normalizeRotation(type,value=0){
+  const def=componentDefinition(type),count=def?.rotate?(def.rotationCount||4):1;
+  return Number.isInteger(value)?((value%count)+count)%count:0;
+}
+export function componentRotationLabel(c){
+  const def=componentDefinition(c.type),r=normalizeRotation(c.type,c.rotation);
+  return !def.rotate?'Fixed':def.rotationCount===2?['North/south','East/west'][r]:ROTATIONS[r];
+}
+export function componentBounds(c){
+  const def=componentDefinition(c.type);
+  const rotation=normalizeRotation(c.type,c.rotation);
+  return {x:c.x,y:c.y,width:rotation%2?def.height:def.width,height:rotation%2?def.width:def.height,rotation};
+}
+// The pump body covers 1/6 of a tile and straddles its facing hull edge.
+export function pumpMount(c){
+  const rotation=componentBounds(c).rotation;
+  const [dx,dy]=[[0,1],[-1,0],[0,-1],[1,0]][rotation];
+  return {x:c.x+.5+dx*.5,y:c.y+.5+dy*.5,rotation,
+    width:rotation%2?1/3:1/2,height:rotation%2?1/2:1/3,
+    facingTile:{x:c.x+dx,y:c.y+dy}};
+}
+export function componentCells(c){const b=componentBounds(c),cells=[];for(let y=b.y;y<b.y+b.height;y++)for(let x=b.x;x<b.x+b.width;x++)cells.push(`${x},${y}`);return cells;}
+// Rotation 0 exhausts south, then west, north and east (clockwise).
+export function exhaustCells(c){
+  const def=componentDefinition(c.type),b=componentBounds(c),cells=[];
+  if(!def.exhaust)return cells;
+  for(let d=0;d<def.exhaust;d++)for(let w=0;w<def.width;w++){
+    const [x,y]=b.rotation===0?[b.x+w,b.y+b.height+d]:b.rotation===1?[b.x-1-d,b.y+w]:b.rotation===2?[b.x+w,b.y-1-d]:[b.x+b.width+d,b.y+w];
+    cells.push(`${x},${y}`);
+  }
+  return cells;
+}
