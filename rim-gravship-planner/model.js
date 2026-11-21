@@ -77,55 +77,73 @@ function circleCells(type,center,edge){
   return cells;
 }
 export function shapeCells(type,a,b){b={...b};if(type==='single')return [key(b.x,b.y)];if(type==='line'){if(Math.abs(b.x-a.x)>=Math.abs(b.y-a.y))b.y=a.y;else b.x=a.x;return line(a,b);}if(type==='diagonal')return line(a,b);const out=[];if(type==='circle'||type==='disc')return circleCells(type,a,b);const minX=Math.min(a.x,b.x),maxX=Math.max(a.x,b.x),minY=Math.min(a.y,b.y),maxY=Math.max(a.y,b.y);for(let y=minY;y<=maxY;y++)for(let x=minX;x<=maxX;x++)if(type==='filled'||x===minX||x===maxX||y===minY||y===maxY)out.push(key(x,y));return out;}
+const PLACEMENT_OK=Object.freeze({rejected:0,message:''});
+// Read-only rules shared by hover previews and actual edits. Ignore the source
+// item while checking a move, without cloning or constructing a temporary ship.
+export function checkPlacement(s,layer,k,rotation=0,{ignore=null,tiles=null}={}){
+  const fail=message=>({rejected:1,message}),[x,y]=point(k),p={x,y};
+  const engine=ignore?.kind==='engine'?null:s.engine;
+  const extenders=ignore?.kind==='extender'?s.extenders.filter((_,i)=>i!==ignore.index):s.extenders;
+  const components=ignore?.kind==='component'?(s.components||[]).filter((_,i)=>i!==ignore.index):s.components||[];
+  const hasHull=k=>!(ignore?.kind==='hull'&&ignore.key===k)&&s.hull.includes(k);
+  const occupied=(k,allowWall=false)=>!!(engine&&footprint(engine,3).includes(k)||extenders.some(e=>key(e.x,e.y)===k)||!allowWall&&hasHull(k)||components.some(c=>componentCells(c).includes(k)));
+  const def=componentDefinition(layer);
+  if(def){
+    const c={type:layer,x,y,rotation:normalizeRotation(layer,rotation)},foot=componentCells(c);
+    if(def.wallMounted&&!hasHull(k))return fail('Oxygen pumps must be mounted on a hull tile.');
+    if(layer==='oxygen-pump'){
+      const front=pumpMount(c).facingTile;
+      if(hasHull(key(front.x,front.y)))return fail('Rotate the oxygen pump to face a non-hull tile.');
+    }
+    if(def.limit&&components.filter(c=>c.type===layer).length>=def.limit)return fail(`A maximum of ${def.limit} ${def.name.toLowerCase()} components is allowed.`);
+    if(foot.some(k=>{const [x,y]=point(k);return !inField(s,{x,y});})||def.engineField&&!inEngineField(engine,componentCenter(c)))return fail(def.engineField?'Place this component inside the original engine field.':'The entire component must be inside a supported grav field.');
+    if(foot.some(k=>occupied(k,def.wallMounted||layer==='autodoor')))return fail('The component footprint overlaps another structure.');
+  }else if(layer==='engine'){
+    if(engine)return fail('Only one grav engine is allowed. Erase it to reposition.');
+    if(footprint(p,3).some(k=>occupied(k)))return fail('The engine needs a clear 3 × 3 footprint.');
+  }else if(layer==='extender'){
+    if(!inEngineField(engine,p))return fail('Place extenders inside the engine’s original tile field.');
+    if(extenders.length>=6)return fail('A maximum of six extenders is allowed.');
+    if(occupied(k))return fail('This tile is occupied by a structure.');
+  }else{
+    const existing=tiles?tiles.has(k):!(ignore?.kind===layer&&ignore.key===k)&&s[layer].includes(k);
+    if(existing)return PLACEMENT_OK;
+    if(!inField(s,p))return fail('Tiles must be inside a supported grav field.');
+    const count=tiles?tiles.size:s.floor.length-(ignore?.kind==='floor'?1:0);
+    if(layer==='floor'&&count>=capacity(s))return fail('Substructure capacity reached. Add a field extender.');
+    if(layer==='hull'&&components.some(c=>c.type==='oxygen-pump'&&key(pumpMount(c).facingTile.x,pumpMount(c).facingTile.y)===k))return fail('This tile must stay clear of hull for the oxygen pump facing it.');
+    if(layer==='hull'&&(engine&&footprint(engine,3).includes(k)||extenders.some(e=>key(e.x,e.y)===k)||components.some(c=>c.type!=='autodoor'&&!componentDefinition(c.type).wallMounted&&componentCells(c).includes(k))))return fail('This tile is occupied by a structure.');
+  }
+  return PLACEMENT_OK;
+}
 export function apply(s,layer,cells,erase=false,rotation=0){
   const next=structuredClone(s);next.components??=[];
-  let rejected=0,message='';const fail=m=>{rejected++;message=m;};
-  const def=componentDefinition(layer);
-  const occupied=(k,allowWall=false)=>!!(next.engine&&footprint(next.engine,3).includes(k)||next.extenders.some(e=>key(e.x,e.y)===k)||(!allowWall&&next.hull.includes(k))||next.components.some(c=>componentCells(c).includes(k)));
-  if(def){
-    for(const k of cells){
-      if(erase){next.components=next.components.filter(c=>c.type!==layer||!componentCells(c).includes(k));continue;}
-      const [x,y]=point(k),c={type:layer,x,y,rotation:normalizeRotation(layer,rotation)},foot=componentCells(c);
-      if(def.wallMounted&&!next.hull.includes(k)){fail('Oxygen pumps must be mounted on a hull tile.');continue;}
-      if(layer==='oxygen-pump'){
-        const front=pumpMount(c).facingTile;
-        if(next.hull.includes(key(front.x,front.y))){fail('Rotate the oxygen pump to face a non-hull tile.');continue;}
-      }
-      if(def.limit&&next.components.filter(c=>c.type===layer).length>=def.limit){fail(`A maximum of ${def.limit} ${def.name.toLowerCase()} components is allowed.`);continue;}
-      if(foot.some(k=>{const [x,y]=point(k);return !inField(next,{x,y});})||def.engineField&&!inEngineField(next.engine,componentCenter(c))){fail(def.engineField?'Place this component inside the original engine field.':'The entire component must be inside a supported grav field.');continue;}
-      if(foot.some(k=>occupied(k,def.wallMounted||layer==='autodoor'))){fail('The component footprint overlaps another structure.');continue;}
-      if(layer==='autodoor')next.hull=next.hull.filter(k=>!foot.includes(k));
+  let rejected=0,message='';
+  const def=componentDefinition(layer),tiles=!def&&layer!=='engine'&&layer!=='extender'?new Set(next[layer]):null;
+  for(const k of cells){
+    if(erase){
+      if(def)next.components=next.components.filter(c=>c.type!==layer||!componentCells(c).includes(k));
+      else if(layer==='engine'&&next.engine&&footprint(next.engine,3).includes(k)){next.engine=null;next.extenders=[];}
+      else if(layer==='extender')next.extenders=next.extenders.filter(e=>key(e.x,e.y)!==k);
+      else if(tiles)tiles.delete(k);
+      continue;
+    }
+    if(tiles?.has(k))continue;
+    const result=checkPlacement(next,layer,k,rotation,{tiles});
+    if(result.rejected){rejected++;message=result.message;continue;}
+    const [x,y]=point(k);
+    if(def){
+      const c={type:layer,x,y,rotation:normalizeRotation(layer,rotation)};
+      if(layer==='autodoor'){const foot=componentCells(c);next.hull=next.hull.filter(k=>!foot.includes(k));}
       next.components.push(c);
-    }
-  }else if(layer==='engine'||layer==='extender'){
-    for(const k of cells){
-      const [x,y]=point(k),p={x,y};
-      if(erase){if(layer==='engine'&&next.engine&&footprint(next.engine,3).includes(k)){next.engine=null;next.extenders=[];}if(layer==='extender')next.extenders=next.extenders.filter(e=>key(e.x,e.y)!==k);continue;}
-      if(layer==='engine'){
-        if(next.engine){fail('Only one grav engine is allowed. Erase it to reposition.');continue;}
-        if(footprint(p,3).some(k=>occupied(k))){fail('The engine needs a clear 3 × 3 footprint.');continue;}
-        next.engine=p;
-      }else{
-        if(!inEngineField(next.engine,p)){fail('Place extenders inside the engine’s original tile field.');continue;}
-        if(next.extenders.length>=6){fail('A maximum of six extenders is allowed.');continue;}
-        if(occupied(k)){fail('This tile is occupied by a structure.');continue;}
-        next.extenders.push(p);
-      }
-    }
-  }else{
-    const set=new Set(next[layer]);
-    for(const k of cells){
-      if(erase){set.delete(k);continue;}if(set.has(k))continue;
-      const [x,y]=point(k);
-      if(!inField(next,{x,y})){fail('Tiles must be inside a supported grav field.');continue;}
-      if(layer==='floor'&&set.size>=capacity(next)){fail('Substructure capacity reached. Add a field extender.');continue;}
-      if(layer==='hull'&&next.components.some(c=>c.type==='oxygen-pump'&&key(pumpMount(c).facingTile.x,pumpMount(c).facingTile.y)===k)){fail('This tile must stay clear of hull for the oxygen pump facing it.');continue;}
-      if(layer==='hull'&&(next.engine&&footprint(next.engine,3).includes(k)||next.extenders.some(e=>key(e.x,e.y)===k)||next.components.some(c=>c.type!=='autodoor'&&!componentDefinition(c.type).wallMounted&&componentCells(c).includes(k)))){fail('This tile is occupied by a structure.');continue;}
+    }else if(layer==='engine')next.engine={x,y};
+    else if(layer==='extender')next.extenders.push({x,y});
+    else{
       if(layer==='hull')next.components=next.components.filter(c=>c.type!=='autodoor'||!componentCells(c).includes(k));
-      set.add(k);
+      tiles.add(k);
     }
-    next[layer]=[...set];
   }
+  if(tiles)next[layer]=[...tiles];
   return {state:next,rejected,message};
 }
 
@@ -163,13 +181,24 @@ export function hitItem(s,p){
   if(s.floor.includes(k))return {kind:'floor',key:k};
   return null;
 }
-export function moveItem(s,item,target){
-  const p=itemPosition(s,item);
-  const fail=message=>({state:s,rejected:1,message,item});
+export function previewMove(s,item,target){
+  const p=itemPosition(s,item),fail=message=>({rejected:1,message,item,cells:[]});
   if(!p)return fail('Select an existing component to move.');
   if(!Number.isInteger(target.x)||!Number.isInteger(target.y)||Math.abs(target.x)>110||Math.abs(target.y)>110)return fail('Move within the planning grid.');
+  const position={...p,x:target.x,y:target.y};
+  const cells=item.kind==='component'?componentCells(position):item.kind==='engine'?footprint(position,3):[key(target.x,target.y)];
+  if(target.x!==p.x||target.y!==p.y){
+    if((item.kind==='floor'||item.kind==='hull')&&s[item.kind].includes(key(target.x,target.y)))return fail('The destination already contains this tile type.');
+    const result=checkPlacement(s,item.kind==='component'?p.type:item.kind,key(target.x,target.y),p.rotation||0,{ignore:item});
+    if(result.rejected)return fail(result.message);
+  }
+  return {rejected:0,message:'',item,position,cells};
+}
+export function moveItem(s,item,target){
+  const preview=previewMove(s,item,target),fail=message=>({state:s,rejected:1,message,item});
+  if(preview.rejected)return fail(preview.message);
+  const p=itemPosition(s,item);
   if(target.x===p.x&&target.y===p.y)return {state:s,rejected:0,message:'',item};
-  if((item.kind==='floor'||item.kind==='hull')&&s[item.kind].includes(key(target.x,target.y)))return fail('The destination already contains this tile type.');
   const next=structuredClone(s);let layer=item.kind,rotation=0;
   if(item.kind==='component'){layer=p.type;rotation=p.rotation;next.components.splice(item.index,1);}
   else if(item.kind==='engine')next.engine=null;

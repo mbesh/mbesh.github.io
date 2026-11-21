@@ -1,16 +1,16 @@
 import {HULL_REFERENCES,hullTopology,prepareHullTexture,drawHull,drawSimpleHull} from './hull.js';
 import {COMPONENTS,componentDefinition,componentBounds,componentCells,componentSprite,componentVisual,barrierJoins,pumpMount,exhaustCells,ROTATIONS,normalizeRotation,componentRotationLabel} from './components.js';
-import {blank,key,point,footprint,capacity,validate,shapeCells,apply,sanitize,inField,inEngineField,fieldCells,hitItem,itemPosition,itemCells,moveItem} from './model.js';
+import {blank,key,point,footprint,capacity,validate,shapeCells,apply,sanitize,inField,inEngineField,fieldCells,hitItem,itemPosition,itemCells,moveItem,checkPlacement,previewMove} from './model.js';
 const $=id=>document.getElementById(id),canvas=$('canvas'),ctx=canvas.getContext('2d');
 const STORAGE='gravship-designs-v1',DRAFT='gravship-draft-v1';
-let state=blank(),layer='engine',selection=null,rotation=0,shape='single',erase=false,zoom=22,offset={x:0,y:0},width=0,height=0,hover=null,drag=null,space=false,undo=[],redo=[],savedId=null,dirty=false,toastTimer,draftTimer,validation=validate(state),supportedField=fieldCells(state),hullLayout=null,hullLayoutState=null,hullReferencesRequested=false;
+let state=blank(),layer='engine',selection=null,rotation=0,shape='single',erase=false,zoom=22,offset={x:0,y:0},width=0,height=0,hover=null,drag=null,space=false,undo=[],redo=[],savedId=null,dirty=false,toastTimer,draftTimer,validation=null,validationState=null,supportedField=new Set(),engineField=new Set(),fieldSignature=null,engineSignature=null,framePending=false,toolsDirty=true,statusDirty=true,libraryCache=null,inventorySignature=null,checksSignature=null,hullLayout=null,hullLayoutState=null,hullReferencesRequested=false;
 const assets={},hullTextures={},hullImages={},paths={floor:'substructure-3x3.png',floorSingle:'substructure-1x1.png',hull:'hull-3x3.png',engine:'GravEngine_with_orb.png',extender:'GravFieldExtender.png'};
 $('diagonal-hull').checked=false;
 const palette=[['engine','Grav engine','3 × 3 · max. 1','GravEngine_with_orb.png'],['floor','Substructure','1 tile · connected floor','substructure-1x1.png'],['hull','Gravship hull','1 tile · needs floor','hull-1x1.png'],['extender','Field extender','1 tile · max. 6','GravFieldExtender.png']];
 const shapes=[['single','·','Single tile'],['line','─','Straight line'],['diagonal','╱','Diagonal line'],['rect','□','Rectangle'],['filled','▣','Filled rectangle'],['circle','○','Circle'],['disc','●','Filled circle']];
 function toast(t){$('toast').textContent=t;$('toast').classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('visible'),3500);}
-function readLibrary(){try{const r=JSON.parse(localStorage.getItem(STORAGE)||'[]');return Array.isArray(r)?r:[];}catch{toast('Saved designs could not be read. Browser storage may be unavailable.');return [];}}
-function store(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch{toast('Could not save. Browser storage is unavailable or full.');return false;}}
+function readLibrary(){if(libraryCache!==null)return libraryCache;try{const r=JSON.parse(localStorage.getItem(STORAGE)||'[]');return libraryCache=Array.isArray(r)?r:[];}catch{toast('Saved designs could not be read. Browser storage may be unavailable.');return libraryCache=[];}}
+function store(k,v){try{localStorage.setItem(k,JSON.stringify(v));if(k===STORAGE)libraryCache=v;return true;}catch{toast('Could not save. Browser storage is unavailable or full.');return false;}}
 function draft(){clearTimeout(draftTimer);draftTimer=setTimeout(()=>store(DRAFT,{state,name:$('name').value,savedId,dirty}),250);}
 function changed(){dirty=true;draft();refresh();}
 function commit(next){if(JSON.stringify(next)===JSON.stringify(state))return;undo.push(structuredClone(state));if(undo.length>80)undo.shift();redo=[];state=next;changed();}
@@ -39,7 +39,8 @@ for(const [id,icon,label] of shapes){const b=document.createElement('button');b.
 $('add').onclick=()=>{erase=false;refresh();};$('erase').onclick=()=>{erase=true;refresh();};
 for(const id of ['grid','field','issues','exhaust'])$(id).onchange=render;
 $('diagonal-hull').onchange=()=>{if($('diagonal-hull').checked)loadHullTextures();render();};
-function refresh(){validation=validate(state);supportedField=fieldCells(state);document.querySelectorAll('[data-layer]').forEach(b=>{const selected=b.dataset.layer===layer;b.classList.toggle('active',selected);b.setAttribute('aria-pressed',selected);});document.querySelectorAll('[data-shape]').forEach(b=>{b.classList.toggle('active',b.dataset.shape===shape);b.setAttribute('aria-pressed',b.dataset.shape===shape);b.disabled=!layer||(layer==='engine'||layer==='extender'||componentDefinition(layer))&&b.dataset.shape!=='single';});$('add').classList.toggle('active',!erase);$('erase').classList.toggle('active',erase);$('add').setAttribute('aria-pressed',!erase);$('erase').setAttribute('aria-pressed',erase);$('mode-label').textContent=`${erase?'Erase':'Place'} ${(componentDefinition(layer)?.name||palette.find(p=>p[0]===layer)?.[1]||'component').toLowerCase()}`;$('shape-label').textContent=shapes.find(s=>s[0]===shape)[2];$('tool-hint').textContent=erase?'Erase affects the selected palette layer. Erasing the engine also removes its extenders.':layer==='engine'?'Click to place the engine. Its center anchors the grav field.':layer==='extender'?'Place inside the engine’s original field. Adds a 17-tile field and 250 tiles of capacity.':shape==='single'?'Click or drag to paint individual tiles. Right-click to erase the selected layer.':shape==='circle'||shape==='disc'?'Drag from the center to the outermost tile. An 18-tile reach matches the engine field; 16 matches an extender.':'Drag between two tiles. Release to draw the shape.';
+function refresh(){toolsDirty=true;statusDirty=true;render();}
+function refreshTools(){document.querySelectorAll('[data-layer]').forEach(b=>{const selected=b.dataset.layer===layer;b.classList.toggle('active',selected);b.setAttribute('aria-pressed',selected);});document.querySelectorAll('[data-shape]').forEach(b=>{b.classList.toggle('active',b.dataset.shape===shape);b.setAttribute('aria-pressed',b.dataset.shape===shape);b.disabled=!layer||(layer==='engine'||layer==='extender'||componentDefinition(layer))&&b.dataset.shape!=='single';});$('add').classList.toggle('active',!erase);$('erase').classList.toggle('active',erase);$('add').setAttribute('aria-pressed',!erase);$('erase').setAttribute('aria-pressed',erase);$('mode-label').textContent=`${erase?'Erase':'Place'} ${(componentDefinition(layer)?.name||palette.find(p=>p[0]===layer)?.[1]||'component').toLowerCase()}`;$('shape-label').textContent=shapes.find(s=>s[0]===shape)[2];$('tool-hint').textContent=erase?'Erase affects the selected palette layer. Erasing the engine also removes its extenders.':layer==='engine'?'Click to place the engine. Its center anchors the grav field.':layer==='extender'?'Place inside the engine’s original field. Adds a 17-tile field and 250 tiles of capacity.':shape==='single'?'Click or drag to paint individual tiles. Right-click to erase the selected layer.':shape==='circle'||shape==='disc'?'Drag from the center to the outermost tile. An 18-tile reach matches the engine field; 16 matches an extender.':'Drag between two tiles. Release to draw the shape.';
 $('select-mode').classList.toggle('active',!layer);$('select-mode').setAttribute('aria-pressed',!layer);
 $('add').disabled=$('erase').disabled=!layer;
 if(!layer){
@@ -49,7 +50,7 @@ if(!layer){
   $('shape-label').textContent='Drag to move';
   $('tool-hint').textContent='Click an item to select it, then drag it to a new position. Right-click or press Esc to clear selection. Moves preserve rotation and can be undone.';
 }
-canvas.style.cursor=layer?'crosshair':selection?'grab':'default';
+canvas.style.cursor=drag?.pan||drag?.move?'grabbing':layer?'crosshair':selection?'grab':'default';
 const selected=componentDefinition(layer);
 $('rotation-controls').hidden=!selected;
 $('rotate').disabled=$('rotate-left').disabled=!selected?.rotate;
@@ -60,11 +61,15 @@ if(selected){
   $('component-wiki').href=`https://rimworldwiki.com/wiki/${selected.wiki}`;
   $('tool-hint').textContent=erase?'Click any tile of this component to remove it. Substructure stays in place.':`Click to place one component; the pointer anchors its top-left tile. ${selected.rotate?'Q / E or the buttons rotate before placing. ':''}${selected.note} All footprint tiles need substructure.`;
 }
-const counts=Object.fromEntries(COMPONENTS.map(c=>[c.id,(state.components||[]).filter(p=>p.type===c.id).length]));
-$('component-count').textContent=(state.components||[]).length;
-document.querySelectorAll('.component-item').forEach(b=>{b.querySelector('.component-quantity').textContent=counts[b.dataset.layer];});
-$('component-inventory').replaceChildren(...COMPONENTS.filter(c=>counts[c.id]).map(c=>{const row=document.createElement('div');row.className='stat';const label=document.createElement('span'),n=document.createElement('b');label.textContent=c.name;n.textContent=counts[c.id]+(c.limit?' / '+c.limit:'');row.append(label,n);return row;}));
-
+}
+function refreshDesign(){
+const counts=Object.fromEntries(COMPONENTS.map(c=>[c.id,0]));for(const c of state.components||[])counts[c.type]++;
+const nextInventorySignature=COMPONENTS.map(c=>counts[c.id]).join(',');
+if(nextInventorySignature!==inventorySignature){
+  inventorySignature=nextInventorySignature;$('component-count').textContent=(state.components||[]).length;
+  document.querySelectorAll('.component-item').forEach(b=>{b.querySelector('.component-quantity').textContent=counts[b.dataset.layer];});
+  $('component-inventory').replaceChildren(...COMPONENTS.filter(c=>counts[c.id]).map(c=>{const row=document.createElement('div');row.className='stat';const label=document.createElement('span'),n=document.createElement('b');label.textContent=c.name;n.textContent=counts[c.id]+(c.limit?' / '+c.limit:'');row.append(label,n);return row;}));
+}
 $('empty').hidden=!!state.engine;$('used').textContent=state.floor.length;$('capacity').textContent=capacity(state).toLocaleString();$('engine-count').textContent=`${state.engine?1:0} / 1`;$('extender-count').textContent=`${state.extenders.length} / 6`;$('hull-count').textContent=state.hull.length;$('meter').style.width=`${Math.min(100,state.floor.length/Math.max(1,capacity(state))*100)}%`;$('capacity-note').textContent=state.engine?`${Math.max(0,capacity(state)-state.floor.length).toLocaleString()} tiles available`:'Place an engine to support 500 tiles.';
 const checks=[];checks.push([!state.engine,state.engine?'Grav engine placed':'Place one grav engine to begin.']);if(state.engine){checks.push([validation.missing.length,validation.missing.length?`${validation.missing.length} structure tiles need substructure.`:'All structures have substructure.']);checks.push([validation.disconnected.length,validation.disconnected.length?`${validation.disconnected.length} floor tiles disconnected from engine.`:'All floor tiles connect to the engine.']);checks.push([validation.outside.length,validation.outside.length?`${validation.outside.length} tiles outside the grav field.`:'All floor tiles within grav field.']);checks.push([validation.over,validation.over?`${validation.over} tiles exceed capacity.`:'Within supported tile capacity.']);if(validation.invalidExtenders.length)checks.push([true,'Extenders must be within the original engine field.']);}if(state.engine&&(state.components||[]).length){
 checks.push([validation.blockedExhaust.length,validation.blockedExhaust.length?`${validation.blockedExhaust.length} thruster clearance tiles obstructed.`:'Thruster clearance is clear.']);
@@ -72,7 +77,30 @@ if(validation.missingWall.length)checks.push([true,`${validation.missingWall.len
 if(validation.blockedPumps.length)checks.push([true,`${validation.blockedPumps.length} oxygen pumps face hull. Rotate them toward a non-hull tile.`]);
 if(validation.outsideComponents.length)checks.push([true,`${validation.outsideComponents.length} components outside their supported field.`]);
 if(validation.overLimits.length)checks.push([true,'Component limits exceeded in this saved design.']);
-}const bad=checks.filter(c=>c[0]).length;$('check-badge').textContent=!state.engine?'Getting started':bad?`${bad} to resolve`:'All checks pass';$('checks').replaceChildren(...checks.map(([warn,t])=>{const li=document.createElement('li');li.className=warn?'warn':'';const s=document.createElement('span');s.textContent=warn?'!':'✓';li.append(s,document.createTextNode(t));return li;}));$('undo').disabled=!undo.length;$('redo').disabled=!redo.length;$('save-state').textContent=dirty?'Unsaved changes':savedId?'Saved in this browser':'Unsaved design';$('saved-count').textContent=readLibrary().length||'';render();}
+}const nextChecksSignature=JSON.stringify(checks);if(nextChecksSignature!==checksSignature){checksSignature=nextChecksSignature;const bad=checks.filter(c=>c[0]).length;$('check-badge').textContent=!state.engine?'Getting started':bad?`${bad} to resolve`:'All checks pass';$('checks').replaceChildren(...checks.map(([warn,t])=>{const li=document.createElement('li');li.className=warn?'warn':'';const s=document.createElement('span');s.textContent=warn?'!':'✓';li.append(s,document.createTextNode(t));return li;}));}
+}
+function refreshStatus(){$('undo').disabled=!undo.length;$('redo').disabled=!redo.length;$('save-state').textContent=dirty?'Unsaved changes':savedId?'Saved in this browser':'Unsaved design';$('saved-count').textContent=readLibrary().length||'';}
+function updateDesign(){
+  if(validationState===state)return;
+  validation=validate(state);validationState=state;
+  const nextFieldSignature=JSON.stringify([state.engine,state.extenders]);
+  if(nextFieldSignature!==fieldSignature){supportedField=fieldCells(state);fieldSignature=nextFieldSignature;}
+  const nextEngineSignature=state.engine?key(state.engine.x,state.engine.y):'';
+  if(nextEngineSignature!==engineSignature){engineField=state.extenders.length?fieldCells({engine:state.engine,extenders:[]}):supportedField;engineSignature=nextEngineSignature;}
+  refreshDesign();toolsDirty=true;statusDirty=true;
+}
+// Coalesce every source of invalidation into one repaint; edits still retain
+// every input sample and are applied before the scheduled frame.
+function render(){
+  if(framePending)return;
+  framePending=true;
+  window.requestAnimationFrame(()=>{
+    framePending=false;updateDesign();
+    if(toolsDirty){toolsDirty=false;refreshTools();}
+    if(statusDirty){statusDirty=false;refreshStatus();}
+    drawCanvas();
+  });
+}
 function screen(x,y){return {x:width/2+offset.x+x*zoom,y:height/2+offset.y+y*zoom};}
 function tile(e){const r=canvas.getBoundingClientRect();return {x:Math.max(-110,Math.min(110,Math.floor((e.clientX-r.left-width/2-offset.x)/zoom))),y:Math.max(-110,Math.min(110,Math.floor((e.clientY-r.top-height/2-offset.y)/zoom)))};}
 function tileRect(k,color){const [x,y]=point(k),p=screen(x,y);ctx.fillStyle=color;ctx.fillRect(p.x,p.y,zoom,zoom);}
@@ -110,7 +138,7 @@ function traceFieldBoundary(cells){
     if(!cells.has(key(x-1,y))){ctx.moveTo(p.x,p.y+zoom);ctx.lineTo(p.x,p.y);}
   }
 }
-function render(){if(!width)return;ctx.clearRect(0,0,width,height);const start=tileAt(0,0),end=tileAt(width,height);if($('field').checked&&state.engine){
+function drawCanvas(){if(!width)return;if(hover)$('coordinates').textContent=`X ${hover.x} · Y ${hover.y}`;ctx.clearRect(0,0,width,height);const start=tileAt(0,0),end=tileAt(width,height);if($('field').checked&&state.engine){
 ctx.save();ctx.fillStyle='#559e9418';ctx.beginPath();
 for(const k of supportedField){const [x,y]=point(k),p=screen(x,y);ctx.rect(p.x,p.y,zoom,zoom);}ctx.fill();
 ctx.strokeStyle='#89c4b990';ctx.lineWidth=1.5;traceFieldBoundary(supportedField);
@@ -132,7 +160,7 @@ if(layer&&hover&&!drag?.pan){
   const points=drag?shapeCells(shape,drag.start,hover):[key(hover.x,hover.y)];
   const hit=def&&remove?(state.components||[]).find(c=>c.type===layer&&componentCells(c).includes(key(hover.x,hover.y))):null;
   const actual=def?(remove?(hit?componentCells(hit):points):componentCells(candidate)):layer==='engine'&&!remove?footprint(hover,3):points;
-  const valid=remove||apply(state,layer,[key(hover.x,hover.y)],false,rotation).rejected===0;
+  const valid=remove||checkPlacement(state,layer,key(hover.x,hover.y),rotation).rejected===0;
   if(def&&!remove){if($('exhaust').checked)for(const k of exhaustCells(candidate))tileRect(k,'#dfb47e45');drawComponent(candidate,.6);}
   for(const k of actual){tileRect(k,remove?'#e7907c55':valid?'#c4dbac50':'#dd766551');const [x,y]=point(k),p=screen(x,y);ctx.strokeStyle=remove||!valid?'#dfa28d':'#cedfbc';ctx.lineWidth=1;ctx.strokeRect(p.x+.5,p.y+.5,zoom-1,zoom-1);}
   if((shape==='circle'||shape==='disc')&&drag){const c=screen(drag.start.x+.5,drag.start.y+.5);ctx.fillStyle='#e2ebd4';ctx.fillRect(c.x-2,c.y-2,4,4);}
@@ -141,8 +169,8 @@ if(layer&&hover&&!drag?.pan){
 // Selection and movement overlays do not change the design until a valid drop.
 if(!layer){
   const moving=drag?.move;
-  const result=moving?moveItem(state,selection,drag.target):null;
-  const highlighted=moving?itemCells(result.rejected?state:result.state,result.item):itemCells(state,selection);
+  const result=moving?previewMove(state,selection,drag.target):null;
+  const highlighted=moving?(result.rejected?itemCells(state,selection):result.cells):itemCells(state,selection);
   if(moving){
     const original=itemPosition(state,selection),preview={...original,...drag.target};
     const cells=selection.kind==='component'?componentCells(preview):selection.kind==='engine'?footprint(preview,3):[key(preview.x,preview.y)];
@@ -160,7 +188,7 @@ if(!layer){
 const highlightEngine=!!state.engine&&layer==='extender'&&!erase&&!drag?.erase;
 $('engine-boundary-legend').hidden=!highlightEngine;
 if(highlightEngine){
-  const originalField=fieldCells({engine:state.engine,extenders:[]});
+  const originalField=engineField;
   ctx.save();traceFieldBoundary(originalField);ctx.lineJoin='round';
   ctx.strokeStyle='#142326';ctx.lineWidth=6;ctx.stroke();
   ctx.strokeStyle='#f1cc7b';ctx.lineWidth=2.5;ctx.stroke();ctx.restore();
@@ -183,11 +211,25 @@ canvas.onpointerdown=e=>{
   drag={start:hover,last:hover,erase:erase||e.button===2,before:structuredClone(state),message:''};
   if(shape==='single')applyCells([key(hover.x,hover.y)],drag.erase);refresh();
 };
+function continueStroke(e){
+  const cells=new Set(),samples=[...(e.getCoalescedEvents?.()||[]),e];
+  for(const sample of samples){
+    const next=tile(sample);hover=next;
+    if(next.x===drag.last.x&&next.y===drag.last.y)continue;
+    for(const k of shapeCells('diagonal',drag.last,next))cells.add(k);
+    drag.last=next;
+  }
+  if(!cells.size)return false;
+  applyCells([...cells],drag.erase);return true;
+}
 canvas.onpointermove=e=>{
-  hover=tile(e);$('coordinates').textContent=`X ${hover.x} · Y ${hover.y}`;
-  if(drag?.pan)offset={x:drag.offset.x+e.clientX-drag.x,y:drag.offset.y+e.clientY-drag.y};
-  else if(drag?.move){drag.target={x:drag.origin.x+hover.x-drag.start.x,y:drag.origin.y+hover.y-drag.start.y};canvas.style.cursor='grabbing';}
-  else if(drag&&shape==='single'&&(!componentDefinition(layer)||drag.erase)){const cells=shapeCells('diagonal',drag.last,hover);applyCells(cells,drag.erase);drag.last=hover;refresh();}
+  if(drag?.pan){offset={x:drag.offset.x+e.clientX-drag.x,y:drag.offset.y+e.clientY-drag.y};hover=tile(e);render();return;}
+  if(drag&&!drag.move&&shape==='single'&&(!componentDefinition(layer)||drag.erase)){
+    if(continueStroke(e))render();return;
+  }
+  const next=tile(e);if(hover&&next.x===hover.x&&next.y===hover.y)return;
+  hover=next;
+  if(drag?.move){drag.target={x:drag.origin.x+hover.x-drag.start.x,y:drag.origin.y+hover.y-drag.start.y};canvas.style.cursor='grabbing';}
   render();
 };
 function finish(e,cancel=false){
@@ -202,6 +244,7 @@ function finish(e,cancel=false){
     selection=result.item;commit(result.state);refresh();return;
   }
   const d=drag;
+  if(e&&!cancel){hover=tile(e);if(shape==='single'&&(!componentDefinition(layer)||d.erase))continueStroke(e);}
   if(cancel)state=d.before;
   else if(shape!=='single')applyCells(shapeCells(shape,d.start,hover||d.start),d.erase);
   drag=null;
@@ -215,11 +258,12 @@ canvas.addEventListener('wheel',e=>{e.preventDefault();const r=canvas.getBoundin
 function center(){const tiles=[...state.floor,...state.hull,...(state.engine?footprint(state.engine,3):[]),...state.extenders.map(e=>key(e.x,e.y)),...(state.components||[]).flatMap(componentCells)];if(!tiles.length){offset={x:0,y:0};zoom=22;}else{const ps=tiles.map(point),xs=ps.map(p=>p[0]),ys=ps.map(p=>p[1]),a=Math.min(...xs),b=Math.max(...xs),c=Math.min(...ys),d=Math.max(...ys);zoom=Math.max(8,Math.min(32,(width-120)/(b-a+5),(height-120)/(d-c+5)));offset={x:-(a+b+1)/2*zoom,y:-(c+d+1)/2*zoom};}hover=null;render();}$('center').onclick=center;
 function history(back){const from=back?undo:redo,to=back?redo:undo;if(!from.length)return;if(drag)finish(null,true);selection=null;to.push(structuredClone(state));state=from.pop();changed();}$('undo').onclick=()=>history(true);$('redo').onclick=()=>history(false);
 window.addEventListener('keydown',e=>{if(e.target.matches('input,textarea')||document.querySelector('dialog[open]'))return;if(!e.ctrlKey&&!e.metaKey&&!e.altKey&&['q','e'].includes(e.key.toLowerCase())){e.preventDefault();rotateSelected(e.key.toLowerCase()==='q'?-1:1);}if(e.code==='Space'){space=true;e.preventDefault();}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();history(!e.shiftKey);}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();save();}if(e.key==='Escape'){chooseLayer(null);hover=null;render();}});window.addEventListener('keyup',e=>{if(e.code==='Space')space=false;});window.addEventListener('blur',()=>{space=false;finish(null,true);});
-$('name').oninput=changed;
+$('name').oninput=()=>{dirty=true;draft();statusDirty=true;render();};
 let confirmAction=null;function confirm(title,text,action){$('confirm-title').textContent=title;$('confirm-text').textContent=text;confirmAction=action;$('confirm-dialog').showModal();}$('cancel-confirm').onclick=()=>$('confirm-dialog').close();$('accept-confirm').onclick=()=>{$('confirm-dialog').close();confirmAction?.();};
-function save(){const library=readLibrary(),id=savedId||crypto.randomUUID(),name=$('name').value.trim()||'Untitled gravship';const item={id,name,updated:Date.now(),state:structuredClone(state)},i=library.findIndex(d=>d.id===id);if(i>=0)library[i]=item;else library.push(item);if(store(STORAGE,library)){savedId=id;dirty=false;$('name').value=name;draft();refresh();toast('Design saved in this browser.');}}$('save').onclick=save;
+function save(){const library=[...readLibrary()],id=savedId||crypto.randomUUID(),name=$('name').value.trim()||'Untitled gravship';const item={id,name,updated:Date.now(),state:structuredClone(state)},i=library.findIndex(d=>d.id===id);if(i>=0)library[i]=item;else library.push(item);if(store(STORAGE,library)){savedId=id;dirty=false;$('name').value=name;draft();refresh();toast('Design saved in this browser.');}}$('save').onclick=save;
 $('new').onclick=()=>{const action=()=>{commit(blank());savedId=null;$('name').value='Untitled gravship';dirty=false;chooseLayer('engine');draft();center();};if(state.engine||state.floor.length||state.hull.length||(state.components||[]).length)confirm('Start a new gravship?','The current canvas will be cleared. Save your design first if you want to keep it.',action);else action();};
-function library(){const list=$('design-list');list.replaceChildren();const items=readLibrary().sort((a,b)=>b.updated-a.updated);if(!items.length){const p=document.createElement('p');p.textContent='No saved designs yet. Use Save design to keep your first gravship.';list.append(p);}for(const item of items){const row=document.createElement('div');row.className='saved-row';const info=document.createElement('div'),name=document.createElement('strong'),meta=document.createElement('small');name.textContent=item.name;meta.textContent=`${item.state?.floor?.length||0} tiles · ${new Date(item.updated).toLocaleDateString()}`;info.append(name,meta);const load=document.createElement('button');load.textContent='Load';load.onclick=()=>{const action=()=>{try{const next=sanitize(item.state);undo.push(structuredClone(state));redo=[];state=next;selection=null;savedId=item.id;$('name').value=item.name;dirty=false;$('library').close();draft();refresh();center();toast('Design loaded.');}catch{toast('This saved design could not be loaded.');}};if(dirty)confirm('Load this design?','Your unsaved canvas changes will be replaced.',action);else action();};const del=document.createElement('button');del.textContent='Delete';del.onclick=()=>confirm('Delete saved design?',`“${item.name}” will be removed from this browser.`,()=>{if(store(STORAGE,readLibrary().filter(d=>d.id!==item.id))){if(savedId===item.id){savedId=null;dirty=true;draft();}library();refresh();}});row.append(info,load,del);list.append(row);}}
+function library(){const list=$('design-list');list.replaceChildren();const items=[...readLibrary()].sort((a,b)=>b.updated-a.updated);if(!items.length){const p=document.createElement('p');p.textContent='No saved designs yet. Use Save design to keep your first gravship.';list.append(p);}for(const item of items){const row=document.createElement('div');row.className='saved-row';const info=document.createElement('div'),name=document.createElement('strong'),meta=document.createElement('small');name.textContent=item.name;meta.textContent=`${item.state?.floor?.length||0} tiles · ${new Date(item.updated).toLocaleDateString()}`;info.append(name,meta);const load=document.createElement('button');load.textContent='Load';load.onclick=()=>{const action=()=>{try{const next=sanitize(item.state);undo.push(structuredClone(state));redo=[];state=next;selection=null;savedId=item.id;$('name').value=item.name;dirty=false;$('library').close();draft();refresh();center();toast('Design loaded.');}catch{toast('This saved design could not be loaded.');}};if(dirty)confirm('Load this design?','Your unsaved canvas changes will be replaced.',action);else action();};const del=document.createElement('button');del.textContent='Delete';del.onclick=()=>confirm('Delete saved design?',`“${item.name}” will be removed from this browser.`,()=>{if(store(STORAGE,readLibrary().filter(d=>d.id!==item.id))){if(savedId===item.id){savedId=null;dirty=true;draft();}library();refresh();}});row.append(info,load,del);list.append(row);}}
+window.addEventListener('storage',e=>{if(e.key===STORAGE||e.key===null){libraryCache=null;statusDirty=true;render();}});
 $('load').onclick=()=>{library();$('library').showModal();};$('close-library').onclick=()=>$('library').close();
 try{const d=JSON.parse(localStorage.getItem(DRAFT));if(d){state=sanitize(d.state);$('name').value=typeof d.name==='string'?d.name:'Untitled gravship';savedId=d.savedId||null;dirty=!!d.dirty;if(state.engine)layer='floor';}}catch{toast('Could not restore the previous canvas. Start a new design.');}
 for(const [id,file] of Object.entries(paths)){const im=new Image();im.onload=()=>{assets[id]=im;render();};im.src=`assets/${file}`;}
