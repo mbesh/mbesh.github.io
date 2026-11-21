@@ -2,8 +2,9 @@ import {barrierJoins,componentCells} from './components.js';
 const key=(x,y)=>`${x},${y}`;
 const point=k=>k.split(',').map(Number);
 // Reference grids describe placement, not decorative pixels that overhang a cell.
+// Optional singles list cells whose artwork is an isolated, upright square cap.
 export const HULL_REFERENCES=[
-  ['single','hull-1x1.png',['H']],
+  ['single','hull-1x1.png',['H'],['0,0']],
   ['horizontal2','hull-2x1.png',['HH']],
   ['horizontal3','hull-3x1.png',['HHH']],
   ['vertical2','hull-1x2.png',['H','H']],
@@ -14,7 +15,7 @@ export const HULL_REFERENCES=[
   ['diagonal','hull-diagonal-empty.png',['.H','H.']],
   ['diagonalFloorNW','hull-diagonal-floor-upper-left.png',['SH','H.']],
   ['diagonalFloorSE','hull-diagonal-floow-lower-left.png',['.H','HS']],
-  ['diagonalFloorBoth','hull-diagonal-floor-both.png',['SH','HS']],
+  ['diagonalFloorBoth','hull-diagonal-floor-both.png',['SH','HS'],['1,0','0,1']],
   ['diagonalMirrored','hull-diagonal-mirrored.png',['H.','.H']],
   ['corner','hull-corner-empty.png',['.H','HH']],
   ['cornerFloor','hull-corner-floor.png',['SH','HH']],
@@ -25,11 +26,19 @@ export const HULL_REFERENCES=[
   ['tEmpty','hull-junction-t-empty.png',['HHH','.H.','.H.']],
   ['tFloor','hull-junction-t-floor.png',['HHH','SHS','SHS']],
   ['bend','hull-diagonal-bend-empty.png',['H.H','.H.']],
-  ['diagonalCross','hull-diagonal-cross-empty.png',['H.H','.H.','H.H']],
+  ['diagonalCross','hull-diagonal-cross-empty.png',['H.H','.H.','H.H'],['0,0','2,0','1,1','0,2','2,2']],
   ['hole','hull-hole-empty.png',['HHH','H.H','HHH']],
   ['staircaseFloor','hull-staircase-floor.png',['HHSS','.HHS','..HH']],
   ['cardinalCross','hull-cardinal-cross-empty.png',['.H.','HHH','.H.']],
-].map(([id,file,rows])=>Object.freeze({id,file,rows,cols:rows[0].length,height:rows.length}));
+  ['chainFloorOneSide','hull-diagonal-chain-floor-one-side.png',['HSS','.HS','..H']],
+  ['diagonalCornerFloor','hull-diagonal-corner-floor-transition.png',['..H','.HH','HSS']],
+  ['checkerboardMixedFloor','hull-diagonal-checkerboard-mixed-floor.png',['HSH','.H.','HSH'],['0,0','2,0','1,1','0,2','2,2']],
+  ['diagonalJunctionMixedFloor','hull-diagonal-junction-mixed-floor.png',['HSH','.H.','H.H'],['0,0','2,0','1,1','0,2','2,2']],
+  ['parallelDiagonalChains','hull-parallel-diagonal-chains.png',['H.H.','.H.H','H.H.'],['0,0','1,1','0,2']],
+  ['parallelDiagonalChains90','hull-parallel-diagonal-chains-90.png',['H.H','.H.','H.H','.H.'],['0,0','2,0','1,1']],
+  ['parallelDiagonalChains270','hull-parallel-diagonal-chains-270.png',['.H.','H.H','.H.','H.H'],['1,2','0,3','2,3']],
+  ['crossMixedFloor','hull-cross-mixed-floor.png',['SH.','HHH','.HS']],
+].map(([id,file,rows,singles=[]])=>Object.freeze({id,file,rows,singles:Object.freeze(singles),cols:rows[0].length,height:rows.length}));
 const at=(rows,x,y)=>rows[y]?.[x]||'.';
 const idx=(x,y)=>(y+2)*5+x+2;
 function transform(x,y,turns,flip){if(flip)x=-x;for(let t=0;t<turns;t++)[x,y]=[-y,x];return [x,y];}
@@ -56,7 +65,13 @@ for(const ref of HULL_REFERENCES)for(let y=0;y<ref.height;y++)for(let x=0;x<ref.
 const cache=new Map();
 function chooseQuarter(signature,qx,qy){
   const cacheKey=signature+qx+qy;if(cache.has(cacheKey))return cache.get(cacheKey);
-  const candidates=buckets.get(cornerKey(signature,qx,qy)+qx+qy)||byHost.get(signature[12]+qx+qy)||[];
+  let candidates=buckets.get(cornerKey(signature,qx,qy)+qx+qy);
+  if(!candidates){
+    const edges=[idx(qx?1:-1,0),idx(0,qy?1:-1)];
+    // An unpictured floor/corner combination can relax the backdrop match,
+    // but must never borrow artwork with different facing hull connections.
+    candidates=(byHost.get(signature[12]+qx+qy)||[]).filter(sample=>edges.every(i=>(sample.signature[i]==='H')===(signature[i]==='H')));
+  }
   const exact=candidates.filter(sample=>sample.signature===signature);
   const interior=[idx(0,-1),idx(1,0),idx(0,1),idx(-1,0)].every(i=>signature[i]==='H')&&signature[idx(qx?1:-1,qy?1:-1)]==='.';
   if(!exact.length&&interior){
@@ -78,10 +93,24 @@ function chooseQuarter(signature,qx,qy){
   if(cache.size>12000)cache.clear();cache.set(cacheKey,best);return best;
 }
 const cellCache=new Map();
+function floorCornerMask(signature){
+  let mask=0;
+  for(let qy=0;qy<2;qy++)for(let qx=0;qx<2;qx++){
+    const sx=qx?1:-1,sy=qy?1:-1;
+    if(signature[idx(sx,0)]==='H'&&signature[idx(0,sy)]==='H'&&signature[idx(sx,sy)]==='.')mask|=1<<(qy*2+qx);
+  }
+  return mask;
+}
 function chooseCell(signature){
   if(cellCache.has(signature))return cellCache.get(signature);
   const cardinals=[idx(0,-1),idx(1,0),idx(0,1),idx(-1,0)];
-  const all=byHost.get(signature[12]+'00')||[];
+  let all=byHost.get(signature[12]+'00')||[];
+  if(signature[12]==='S'){
+    const corners=floorCornerMask(signature);
+    // A nearby diagonal reference must not add a bevel across floored gaps.
+    if(!corners)return [];
+    all=all.filter(sample=>floorCornerMask(sample.signature)===corners);
+  }
   let candidates=all.filter(s=>cardinals.every(i=>s.signature[i]===signature[i]));
   if(!candidates.length)candidates=all;
   let best=null,bestScore=Infinity;
@@ -149,7 +178,8 @@ export function hullTopology(s){
         quarters.push(!hasDiagonalJoin&&selected?.signature!==context?orthogonalQuarter(context,qx,qy)||selected:selected);
       }
     }
-    tiles.set(k,{x,y,host,context,quarters});
+    const single=host==='H'&&quarters.length===4&&quarters.every(q=>q?.ref.singles.includes(key(q.x,q.y)))?quarters[0]:null;
+    if(quarters.length)tiles.set(k,{x,y,host,context,quarters,single});
   }
   return {tiles};
 }
@@ -195,11 +225,19 @@ export function prepareHullTexture(image,ref,createSurface=(w,h)=>new OffscreenC
   ctx.putImageData(pixels,0,0);return surface;
 }
 export function drawHull(ctx,layout,textures,screen,zoom){
-  for(const cell of layout.tiles.values())for(const sample of cell.quarters){
-    if(!sample)continue;const image=textures[sample.ref.id];if(!image)continue;
-    const tw=image.width/sample.ref.cols,th=image.height/sample.ref.height;
-    const p=screen(cell.x+sample.qx/2+.25,cell.y+sample.qy/2+.25);
-    ctx.save();ctx.translate(p.x,p.y);ctx.rotate(sample.turns*Math.PI/2);if(sample.flip)ctx.scale(-1,1);
-    ctx.drawImage(image,(sample.x+sample.sx/2)*tw,(sample.y+sample.sy/2)*th,tw/2,th/2,-zoom/4,-zoom/4,zoom/2+.05,zoom/2+.05);ctx.restore();
+  for(const cell of layout.tiles.values()){
+    if(cell.single){
+      const sample=cell.single,image=textures[sample.ref.id];if(!image)continue;
+      const tw=image.width/sample.ref.cols,th=image.height/sample.ref.height,p=screen(cell.x,cell.y);
+      // Layout matching may rotate or mirror the context; isolated artwork never turns.
+      ctx.drawImage(image,sample.x*tw,sample.y*th,tw,th,p.x,p.y,zoom,zoom);continue;
+    }
+    for(const sample of cell.quarters){
+      if(!sample)continue;const image=textures[sample.ref.id];if(!image)continue;
+      const tw=image.width/sample.ref.cols,th=image.height/sample.ref.height;
+      const p=screen(cell.x+sample.qx/2+.25,cell.y+sample.qy/2+.25);
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(sample.turns*Math.PI/2);if(sample.flip)ctx.scale(-1,1);
+      ctx.drawImage(image,(sample.x+sample.sx/2)*tw,(sample.y+sample.sy/2)*th,tw/2,th/2,-zoom/4,-zoom/4,zoom/2+.05,zoom/2+.05);ctx.restore();
+    }
   }
 }
