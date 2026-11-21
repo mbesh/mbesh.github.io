@@ -16,6 +16,8 @@ export const COMPONENTS = [
   {id:'oxygen-pump',name:'Oxygen pump',width:1,height:1,rotate:true,wallMounted:true,group:'Life support',symbol:'O₂',color:'#ed963e',wiki:'Oxygen_pump',note:'Mount on a hull edge facing a non-hull tile. Needs substructure beneath the wall.'},
   {id:'vac-barrier',name:'Vac barrier',width:1,height:1,rotate:true,group:'Life support',symbol:'VB',color:'#93caca',wiki:'Vac_barrier',note:'A powered, passable air barrier.'},
   {id:'heater',name:'Heater',width:1,height:1,group:'Life support',symbol:'H',color:'#d5a08d',wiki:'Heater',note:'Warms enclosed rooms.'},
+  // Core SolarGenerator definition: 4 × 4 and rotatable=false.
+  {id:'solar-generator',name:'Solar generator',width:4,height:4,group:'Power',symbol:'SOL',color:'#82a6bd',wiki:'Solar_generator',note:'Produces up to 1,700 W in sunlight; roofs reduce output.'},
 ];
 // South-facing console art uses the 3-wide by 2-deep orientation of its 2 × 3 footprint.
 const directional=prefix=>({south:`${prefix}_south.png`,north:`${prefix}_north.png`,east:`${prefix}_east.png`});
@@ -33,6 +35,7 @@ const SPRITES={
   'subpersona-core':{south:'PilotSubpersonaCore.png'},
   'vac-barrier':{south:'VacBarrier.png',north:'VacBarrier.png',east:'VacBarrier_east-clean.png'},
   'heater':{south:'Heater.png'},
+  'solar-generator':{south:'Solar_generator.png'},
 };
 for(const c of COMPONENTS)c.sprites=SPRITES[c.id]||{south:`components/${c.id}.svg`};
 export const ROTATIONS=['South','West','North','East'];
