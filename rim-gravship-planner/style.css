@@ -6,3 +6,5 @@
 #select-mode{width:100%;margin-bottom:12px;text-align:left}#select-mode.active{background:#43544e;border-color:#a4bfae}
 
 .footer-credit{margin:12px 0;font-size:13px}.footer-links{display:flex;flex-direction:column;gap:6px}@media(max-width:650px){.sidebar-footer{display:block;grid-column:1/-1;border-top:1px solid var(--line)}}
+
+.render-options label{display:flex;align-items:flex-start;gap:8px;font-size:13px;line-height:1.5;cursor:pointer}.render-options input{accent-color:#b8d9ca;flex-shrink:0;margin-top:4px}.render-options small{display:block;color:var(--muted);font-size:12px}@media(max-width:650px){.render-options{grid-column:1/-1}}

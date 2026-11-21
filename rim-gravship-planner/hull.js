@@ -49,6 +49,8 @@ function cornerCut(signature,qx,qy){
 }
 const cornerKey=(signature,qx,qy)=>{const sx=qx?1:-1,sy=qy?1:-1;return signature[12]+signature[idx(sx,0)]+signature[idx(0,sy)]+signature[idx(sx,sy)]+Number(cornerCut(signature,qx,qy));};
 const buckets=new Map(),byHost=new Map();
+function initializeReferences(){
+if(buckets.size)return;
 for(const ref of HULL_REFERENCES)for(let y=0;y<ref.height;y++)for(let x=0;x<ref.cols;x++){
   for(let turns=0;turns<4;turns++)for(const flip of [false,true]){
     const signature=Array(25).fill('.');
@@ -61,6 +63,7 @@ for(const ref of HULL_REFERENCES)for(let y=0;y<ref.height;y++)for(let x=0;x<ref.
       const host=signature[12]+qx+qy;if(!byHost.has(host))byHost.set(host,[]);byHost.get(host).push(sample);
     }
   }
+}
 }
 const cache=new Map();
 function chooseQuarter(signature,qx,qy){
@@ -142,6 +145,7 @@ function orthogonalQuarter(signature,qx,qy){
   return template?{...template,method:'orthogonal'}:null;
 }
 export function hullTopology(s){
+  initializeReferences();
   const hull=new Set(s.hull),floor=new Set(s.floor),cells=new Set(hull),tiles=new Map();
   const occupied=new Set((s.components||[]).flatMap(componentCells));
   for(const e of s.extenders||[])occupied.add(key(e.x,e.y));
@@ -223,6 +227,23 @@ export function prepareHullTexture(image,ref,createSurface=(w,h)=>new OffscreenC
     if(!supported)data[i+3]=0;
   }
   ctx.putImageData(pixels,0,0);return surface;
+}
+// Fast cardinal-only rendering uses the native atlas without matching or cleanup.
+export function drawSimpleHull(ctx,s,image,screen,zoom){
+  if(!image)return;
+  const hull=new Set(s.hull),barriers=new Map((s.components||[]).filter(c=>c.type==='vac-barrier').map(c=>[key(c.x,c.y),c]));
+  const w=image.width/3,h=image.height/3;
+  const joins=(x,y,dx,dy)=>{
+    const neighbor=key(x+dx,y+dy),barrier=barriers.get(neighbor);
+    return hull.has(neighbor)||!!barrier&&barrierJoins(barrier,-dx,-dy);
+  };
+  for(const k of hull){
+    const [x,y]=point(k),p=screen(x,y);
+    for(let qy=0;qy<2;qy++)for(let qx=0;qx<2;qx++){
+      const sx=joins(x,y,qx?1:-1,0)?1:qx?2:0,sy=joins(x,y,0,qy?1:-1)?1:qy?2:0;
+      ctx.drawImage(image,(sx+qx/2)*w,(sy+qy/2)*h,w/2,h/2,p.x+qx*zoom/2,p.y+qy*zoom/2,zoom/2+.05,zoom/2+.05);
+    }
+  }
 }
 export function drawHull(ctx,layout,textures,screen,zoom){
   for(const cell of layout.tiles.values()){
