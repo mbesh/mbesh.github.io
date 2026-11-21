@@ -97,12 +97,33 @@ function chooseCell(signature){
   }
   if(cellCache.size>12000)cellCache.clear();cellCache.set(signature,quarters);return quarters;
 }
+const orthogonalTemplates=new Map();
+function orthogonalQuarter(signature,qx,qy){
+  const sx=qx?1:-1,sy=qy?1:-1,side=signature[idx(sx,0)]==='H',vertical=signature[idx(0,sy)]==='H',diagonal=signature[idx(sx,sy)]==='H';
+  let id,x,y,flip=false;
+  if(!side&&!vertical){id='single';x=0;y=0;}
+  else if(side&&!vertical){id='horizontal3';x=1;y=0;}
+  else if(!side&&vertical){id='vertical3';x=0;y=1;}
+  else if(diagonal){id='square3';x=1;y=1;}
+  else if(qy===0){id='cornerFloor';x=1;y=1;flip=qx===1;}
+  else{id='tFloor';x=1;y=0;}
+  const k=[id,x,y,qx,qy,flip].join(':');
+  if(!orthogonalTemplates.has(k))orthogonalTemplates.set(k,(byHost.get('H'+qx+qy)||[]).find(q=>q.ref.id===id&&q.x===x&&q.y===y&&!q.turns&&q.flip===flip));
+  const template=orthogonalTemplates.get(k);
+  return template?{...template,method:'orthogonal'}:null;
+}
 export function hullTopology(s){
   const hull=new Set(s.hull),floor=new Set(s.floor),cells=new Set(hull),tiles=new Map();
   const occupied=new Set((s.components||[]).flatMap(componentCells));
   for(const e of s.extenders||[])occupied.add(key(e.x,e.y));
   if(s.engine)for(let y=s.engine.y-1;y<=s.engine.y+1;y++)for(let x=s.engine.x-1;x<=s.engine.x+1;x++)occupied.add(key(x,y));
   for(const k of hull){const [x,y]=point(k);for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)cells.add(key(x+dx,y+dy));}
+  const emptyCorners=new Set();
+  for(const k of cells){
+    if(hull.has(k)||floor.has(k)||occupied.has(k))continue;
+    const [x,y]=point(k);
+    if([[1,1],[-1,1],[-1,-1],[1,-1]].some(([sx,sy])=>hull.has(key(x+sx,y))&&hull.has(key(x,y+sy))))emptyCorners.add(k);
+  }
   for(const k of cells){
     const [x,y]=point(k),host=hull.has(k)?'H':floor.has(k)?'S':'.';
     if(host!=='H'){
@@ -118,8 +139,17 @@ export function hullTopology(s){
       signature.push(hull.has(n)||virtual?'H':floor.has(n)?'S':'.');
     }
     const context=signature.join(''),quarters=host==='H'?[]:chooseCell(context);
-    if(host==='H')for(let qy=0;qy<2;qy++)for(let qx=0;qx<2;qx++)quarters.push(chooseQuarter(context,qx,qy));
-    tiles.set(k,{x,y,host,quarters});
+    if(host==='H'){
+      let hasDiagonalJoin=false;
+      for(let dy=-2;dy<=2&&!hasDiagonalJoin;dy++)for(let dx=-2;dx<=2;dx++)if(emptyCorners.has(key(x+dx,y+dy))){hasDiagonalJoin=true;break;}
+      for(let qy=0;qy<2;qy++)for(let qx=0;qx<2;qx++){
+        const selected=chooseQuarter(context,qx,qy);
+        // Fully floor-separated hull uses ordinary wall pieces. Distant floor
+        // changes must not introduce a rotated bevel, end cap or false seam.
+        quarters.push(!hasDiagonalJoin&&selected?.signature!==context?orthogonalQuarter(context,qx,qy)||selected:selected);
+      }
+    }
+    tiles.set(k,{x,y,host,context,quarters});
   }
   return {tiles};
 }
