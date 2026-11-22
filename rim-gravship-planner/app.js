@@ -1,4 +1,5 @@
 import {HULL_REFERENCES,hullTopology,updateHullTopology,drawHull,drawSimpleHull} from './hull.js';
+import {drawShapeMeasurements} from './measurements.js';
 import {COMPONENTS,componentDefinition,componentBounds,componentCells,componentSprite,componentVisual,barrierJoins,pumpMount,exhaustCells,ROTATIONS,normalizeRotation,componentRotationLabel} from './components.js';
 import {blank,key,point,footprint,capacity,validate,shapeCells,apply,sanitize,inField,inEngineField,fieldCells,hitItem,itemPosition,itemCells,moveItem,checkPlacement,previewMove} from './model.js';
 const $=id=>document.getElementById(id),canvas=$('canvas'),ctx=canvas.getContext('2d');
@@ -160,10 +161,12 @@ if(layer&&hover&&!drag?.pan){
   const points=drag?shapeCells(shape,drag.start,hover):[key(hover.x,hover.y)];
   const hit=def&&remove?(state.components||[]).find(c=>c.type===layer&&componentCells(c).includes(key(hover.x,hover.y))):null;
   const actual=def?(remove?(hit?componentCells(hit):points):componentCells(candidate)):layer==='engine'&&!remove?footprint(hover,3):points;
+  const measurement=drag&&!drag.move&&shape!=='single'&&!def?{count:actual.length,minX:Infinity,minY:Infinity,maxX:-Infinity,maxY:-Infinity}:null;
   const valid=remove||checkPlacement(state,layer,key(hover.x,hover.y),rotation).rejected===0;
   if(def&&!remove){if($('exhaust').checked)for(const k of exhaustCells(candidate))tileRect(k,'#dfb47e45');drawComponent(candidate,.6);}
-  for(const k of actual){tileRect(k,remove?'#e7907c55':valid?'#c4dbac50':'#dd766551');const [x,y]=point(k),p=screen(x,y);ctx.strokeStyle=remove||!valid?'#dfa28d':'#cedfbc';ctx.lineWidth=1;ctx.strokeRect(p.x+.5,p.y+.5,zoom-1,zoom-1);}
+  for(const k of actual){tileRect(k,remove?'#e7907c55':valid?'#c4dbac50':'#dd766551');const [x,y]=point(k),p=screen(x,y);ctx.strokeStyle=remove||!valid?'#dfa28d':'#cedfbc';ctx.lineWidth=1;ctx.strokeRect(p.x+.5,p.y+.5,zoom-1,zoom-1);if(measurement){measurement.minX=Math.min(measurement.minX,x);measurement.minY=Math.min(measurement.minY,y);measurement.maxX=Math.max(measurement.maxX,x);measurement.maxY=Math.max(measurement.maxY,y);}}
   if((shape==='circle'||shape==='disc')&&drag){const c=screen(drag.start.x+.5,drag.start.y+.5);ctx.fillStyle='#e2ebd4';ctx.fillRect(c.x-2,c.y-2,4,4);}
+  if(measurement)drawShapeMeasurements(ctx,measurement,screen,zoom,{width,height});
 }
 
 // Selection and movement overlays do not change the design until a valid drop.
