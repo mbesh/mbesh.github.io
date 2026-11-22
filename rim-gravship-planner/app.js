@@ -1,10 +1,10 @@
-import {HULL_REFERENCES,hullTopology,prepareHullTexture,drawHull,drawSimpleHull} from './hull.js';
+import {HULL_REFERENCES,hullTopology,updateHullTopology,drawHull,drawSimpleHull} from './hull.js';
 import {COMPONENTS,componentDefinition,componentBounds,componentCells,componentSprite,componentVisual,barrierJoins,pumpMount,exhaustCells,ROTATIONS,normalizeRotation,componentRotationLabel} from './components.js';
 import {blank,key,point,footprint,capacity,validate,shapeCells,apply,sanitize,inField,inEngineField,fieldCells,hitItem,itemPosition,itemCells,moveItem,checkPlacement,previewMove} from './model.js';
 const $=id=>document.getElementById(id),canvas=$('canvas'),ctx=canvas.getContext('2d');
 const STORAGE='gravship-designs-v1',DRAFT='gravship-draft-v1';
-let state=blank(),layer='engine',selection=null,rotation=0,shape='single',erase=false,zoom=22,offset={x:0,y:0},width=0,height=0,hover=null,drag=null,space=false,undo=[],redo=[],savedId=null,dirty=false,toastTimer,draftTimer,validation=null,validationState=null,supportedField=new Set(),engineField=new Set(),fieldSignature=null,engineSignature=null,framePending=false,toolsDirty=true,statusDirty=true,libraryCache=null,inventorySignature=null,checksSignature=null,hullLayout=null,hullLayoutState=null,hullReferencesRequested=false;
-const assets={},hullTextures={},hullImages={},paths={floor:'substructure-3x3.png',floorSingle:'substructure-1x1.png',hull:'hull-3x3.png',engine:'GravEngine_with_orb.png',extender:'GravFieldExtender.png'};
+let state=blank(),layer='engine',selection=null,rotation=0,shape='single',erase=false,zoom=22,offset={x:0,y:0},width=0,height=0,hover=null,drag=null,space=false,undo=[],redo=[],savedId=null,dirty=false,toastTimer,draftTimer,validation=null,validationState=null,supportedField=new Set(),engineField=new Set(),fieldSignature=null,engineSignature=null,framePending=false,toolsDirty=true,statusDirty=true,libraryCache=null,inventorySignature=null,checksSignature=null,hullLayout=null,hullLayoutState=null,hullReferencesRequested=false,hullTexturesReady=false;
+const assets={},hullTextures={},paths={floor:'substructure-3x3.png',floorSingle:'substructure-1x1.png',hull:'hull-3x3.png',engine:'GravEngine_with_orb.png',extender:'GravFieldExtender.png'};
 $('diagonal-hull').checked=false;
 const palette=[['engine','Grav engine','3 × 3 · max. 1','GravEngine_with_orb.png'],['floor','Substructure','1 tile · connected floor','substructure-1x1.png'],['hull','Gravship hull','1 tile · needs floor','hull-1x1.png'],['extender','Field extender','1 tile · max. 6','GravFieldExtender.png']];
 const shapes=[['single','·','Single tile'],['line','─','Straight line'],['diagonal','╱','Diagonal line'],['rect','□','Rectangle'],['filled','▣','Filled rectangle'],['circle','○','Circle'],['disc','●','Filled circle']];
@@ -146,8 +146,8 @@ ctx.stroke();ctx.restore();}
 
 if($('grid').checked){ctx.lineWidth=1;for(let x=start.x;x<=end.x+1;x++){const p=screen(x,0);ctx.strokeStyle=x%5===0?'#68827e25':'#68827e12';ctx.beginPath();ctx.moveTo(Math.round(p.x)+.5,0);ctx.lineTo(Math.round(p.x)+.5,height);ctx.stroke();}for(let y=start.y;y<=end.y+1;y++){const p=screen(0,y);ctx.strokeStyle=y%5===0?'#68827e25':'#68827e12';ctx.beginPath();ctx.moveTo(0,Math.round(p.y)+.5);ctx.lineTo(width,Math.round(p.y)+.5);ctx.stroke();}}
 const floorTiles=new Set(state.floor);for(const k of state.floor)connectedSprite(k,floorTiles,'floor');
-if($('diagonal-hull').checked){
-  if(hullLayoutState!==state){hullLayout=hullTopology(state);hullLayoutState=state;}
+if($('diagonal-hull').checked&&hullTexturesReady){
+  if(hullLayoutState!==state){hullLayout=hullLayout?updateHullTopology(hullLayout,state):hullTopology(state);hullLayoutState=state;}
   drawHull(ctx,hullLayout,hullTextures,screen,zoom);
 }else drawSimpleHull(ctx,state,assets.hull,screen,zoom);
 if(state.engine&&assets.engine){const p=screen(state.engine.x-1,state.engine.y-1);ctx.drawImage(assets.engine,p.x,p.y,zoom*3,zoom*3);}for(const e of state.extenders){const p=screen(e.x,e.y);if(assets.extender)ctx.drawImage(assets.extender,p.x,p.y,zoom,zoom);}
@@ -267,17 +267,16 @@ window.addEventListener('storage',e=>{if(e.key===STORAGE||e.key===null){libraryC
 $('load').onclick=()=>{library();$('library').showModal();};$('close-library').onclick=()=>$('library').close();
 try{const d=JSON.parse(localStorage.getItem(DRAFT));if(d){state=sanitize(d.state);$('name').value=typeof d.name==='string'?d.name:'Untitled gravship';savedId=d.savedId||null;dirty=!!d.dirty;if(state.engine)layer='floor';}}catch{toast('Could not restore the previous canvas. Start a new design.');}
 for(const [id,file] of Object.entries(paths)){const im=new Image();im.onload=()=>{assets[id]=im;render();};im.src=`assets/${file}`;}
-function prepareHullImage(image,ref){
-  hullTextures[ref.id]=prepareHullTexture(image,ref,(w,h)=>{if(typeof OffscreenCanvas!=='undefined')return new OffscreenCanvas(w,h);const surface=document.createElement('canvas');surface.width=w;surface.height=h;return surface;});
-}
 function loadHullTextures(){
-  if(hullReferencesRequested){
-    for(const ref of HULL_REFERENCES)if(hullImages[ref.id]&&!hullTextures[ref.id])prepareHullImage(hullImages[ref.id],ref);
-    return;
-  }
+  if(hullReferencesRequested)return;
   hullReferencesRequested=true;
   for(const ref of HULL_REFERENCES){
-    const im=new Image();im.onload=()=>{hullImages[ref.id]=im;if($('diagonal-hull').checked){prepareHullImage(im,ref);render();}};im.src=`assets/${ref.file}`;
+    const im=new Image();im.onload=()=>{
+      hullTextures[ref.id]=im;hullTexturesReady=HULL_REFERENCES.every(r=>hullTextures[r.id]);
+      if($('diagonal-hull').checked)render();
+    };
+    im.onerror=()=>toast('Diagonal hull artwork could not be loaded. Reload to retry.');
+    im.src=`assets/${ref.texture}`;
   }
 }
 for(const def of COMPONENTS)for(const file of new Set(Object.values(def.sprites))){

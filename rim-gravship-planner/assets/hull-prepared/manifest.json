@@ -1,0 +1,465 @@
+{
+  "version": 1,
+  "recipeHash": "b52ee5143dbc1dc71d5c4b3b2497e0f1055c7c779ca12047799831eac7282e58",
+  "textures": [
+    {
+      "id": "single",
+      "source": "hull-1x1.png",
+      "file": "hull-prepared/hull-1x1.png",
+      "rows": [
+        "H"
+      ],
+      "width": 110,
+      "height": 109,
+      "sourceHash": "634d429bbb534d90db266fb6e1bf782b0db783eb26621f0c1b949bf6cd25d195",
+      "textureHash": "266c32412447a0adcc428c4c73732c78672923fe6c148d5419292384066718a1"
+    },
+    {
+      "id": "horizontal2",
+      "source": "hull-2x1.png",
+      "file": "hull-prepared/hull-2x1.png",
+      "rows": [
+        "HH"
+      ],
+      "width": 226,
+      "height": 113,
+      "sourceHash": "630e13c57359b88f9902bb84c09b8aa07340ad4f23b2be3fc285d11c6715de22",
+      "textureHash": "1a6965ce698c601a961fd88f38a15466b73d0397589d6495272983d6b6552c13"
+    },
+    {
+      "id": "horizontal3",
+      "source": "hull-3x1.png",
+      "file": "hull-prepared/hull-3x1.png",
+      "rows": [
+        "HHH"
+      ],
+      "width": 339,
+      "height": 112,
+      "sourceHash": "4000344b88cce3d630991f7d2aed5bc4946a15e95cac116e5e20951bfe6c9520",
+      "textureHash": "8e12739ec542d830ed6534797ef29b52c69b5fa78de209d8c09a1be46bd5dce9"
+    },
+    {
+      "id": "vertical2",
+      "source": "hull-1x2.png",
+      "file": "hull-prepared/hull-1x2.png",
+      "rows": [
+        "H",
+        "H"
+      ],
+      "width": 116,
+      "height": 224,
+      "sourceHash": "93ff36539b1cdcb7d113e09ac42eaea44761a292a0454076f2f3c9717d94b28b",
+      "textureHash": "6f1fffd9a641e840b63c853ff2fcb26bd01873ea87a5f84d0f2631cb8308e9ba"
+    },
+    {
+      "id": "vertical3",
+      "source": "hull-1x3.png",
+      "file": "hull-prepared/hull-1x3.png",
+      "rows": [
+        "H",
+        "H",
+        "H"
+      ],
+      "width": 114,
+      "height": 336,
+      "sourceHash": "c9296f1cc98ed1394b828bd9e67c21b2be6f728ff691db499a4b3b426214c9dc",
+      "textureHash": "7e2367321ccf5b8998e1fc0274b84d15638a97e7cf1594c8bcc4064baa0abff6"
+    },
+    {
+      "id": "square2",
+      "source": "hull-2x2.png",
+      "file": "hull-prepared/hull-2x2.png",
+      "rows": [
+        "HH",
+        "HH"
+      ],
+      "width": 229,
+      "height": 223,
+      "sourceHash": "2b51af288719cd6dbad5a85a79cbd4fdeecc74acfc4ab8742a1742e19b33c5bd",
+      "textureHash": "85b95ed27d72ca877b20ee5fd9b122f0a72ec3b9de77fc00dc7ca95dc3b46f17"
+    },
+    {
+      "id": "rectangle",
+      "source": "hull-3x2.png",
+      "file": "hull-prepared/hull-3x2.png",
+      "rows": [
+        "HHH",
+        "HHH"
+      ],
+      "width": 340,
+      "height": 228,
+      "sourceHash": "0f3f0db6f322370df128255f4b7c325c72d37118769f0259268294e1cf1e2ba2",
+      "textureHash": "31cfe7194673916b739de5f3abccba1f0e1d1afb98b47b200944195e53bc21a8"
+    },
+    {
+      "id": "square3",
+      "source": "hull-3x3.png",
+      "file": "hull-prepared/hull-3x3.png",
+      "rows": [
+        "HHH",
+        "HHH",
+        "HHH"
+      ],
+      "width": 337,
+      "height": 339,
+      "sourceHash": "195ac06d7739214f66d75f1477e087fcd3d24622d33dd693b6d9060ea605e7ba",
+      "textureHash": "5b0600120948dc5882b8f3b8183726e1e49869984dbaa019de3aa5c8ce041b5e"
+    },
+    {
+      "id": "diagonal",
+      "source": "hull-diagonal-empty.png",
+      "file": "hull-prepared/hull-diagonal-empty.png",
+      "rows": [
+        ".H",
+        "H."
+      ],
+      "width": 154,
+      "height": 155,
+      "sourceHash": "e7e6c600b68c5842a73d91596e8585dffe08604e911b91d6a0b0632a6ec13ff3",
+      "textureHash": "ab19273489200520e0fc3631acfd36a5090afc4efc5e045b9d9c5b02191e5777"
+    },
+    {
+      "id": "diagonalFloorNW",
+      "source": "hull-diagonal-floor-upper-left.png",
+      "file": "hull-prepared/hull-diagonal-floor-upper-left.png",
+      "rows": [
+        "SH",
+        "H."
+      ],
+      "width": 154,
+      "height": 156,
+      "sourceHash": "db31d66ebee9468bad3991830a0bd6207407b63edb1f87ca727163f5975a2d79",
+      "textureHash": "6d1538451da4f0d2e00b28c7a60482b80098e3b7fa7a89e8bea7ecebc0c75bd5"
+    },
+    {
+      "id": "diagonalFloorSE",
+      "source": "hull-diagonal-floow-lower-left.png",
+      "file": "hull-prepared/hull-diagonal-floow-lower-left.png",
+      "rows": [
+        ".H",
+        "HS"
+      ],
+      "width": 155,
+      "height": 154,
+      "sourceHash": "512cf33917154322869469c6e0476534a56ef218cd08e58050fd7a8b7397e50c",
+      "textureHash": "e0acc688922c4b7995033e3519bcd756afaef6c3fef2dfe96628b8f1a9a6b773"
+    },
+    {
+      "id": "diagonalFloorBoth",
+      "source": "hull-diagonal-floor-both.png",
+      "file": "hull-prepared/hull-diagonal-floor-both.png",
+      "rows": [
+        "SH",
+        "HS"
+      ],
+      "width": 156,
+      "height": 157,
+      "sourceHash": "9f188c399af21efdb9f265bf6db70283ebda0fde51a92c8bf02cd4546bcff838",
+      "textureHash": "61d0e73b2039fcb1f4dd825b75bee82f75fa7197b0db8409e88fd017f837ad99"
+    },
+    {
+      "id": "diagonalMirrored",
+      "source": "hull-diagonal-mirrored.png",
+      "file": "hull-prepared/hull-diagonal-mirrored.png",
+      "rows": [
+        "H.",
+        ".H"
+      ],
+      "width": 156,
+      "height": 154,
+      "sourceHash": "edc128b038fda80ce54dfcb8996ae3f8c0b45ff83b71ce921a76172681a42b61",
+      "textureHash": "f6049d354800b7daea7ce893a09cffcecf4335084299236bb79da073707683d2"
+    },
+    {
+      "id": "corner",
+      "source": "hull-corner-empty.png",
+      "file": "hull-prepared/hull-corner-empty.png",
+      "rows": [
+        ".H",
+        "HH"
+      ],
+      "width": 156,
+      "height": 158,
+      "sourceHash": "f0ab5694f275ecbcb19a6a8f0a0fe84f4be8b519cb768a1fd96da5e08a9c4bad",
+      "textureHash": "a36ef0713d54792b7c4a34c2388868a8059fc23abd22f4fca9bbd3bf8341b65a"
+    },
+    {
+      "id": "cornerFloor",
+      "source": "hull-corner-floor.png",
+      "file": "hull-prepared/hull-corner-floor.png",
+      "rows": [
+        "SH",
+        "HH"
+      ],
+      "width": 156,
+      "height": 157,
+      "sourceHash": "bbf24cd9c0cb9a014b175dbaefc71e6f0fca8ab2b78f4708dda04192826ad691",
+      "textureHash": "a0b0fbf841a1d445527af367c10cdfd7c27c2f94c6d111502c67c8f29e729559"
+    },
+    {
+      "id": "chain",
+      "source": "hull-diagonal-chain.png",
+      "file": "hull-prepared/hull-diagonal-chain.png",
+      "rows": [
+        "..H",
+        ".H.",
+        "H.."
+      ],
+      "width": 233,
+      "height": 235,
+      "sourceHash": "073bd9be236924f1957d3168c28577558632412be4bddb14cff19fb021dad4f4",
+      "textureHash": "4a3fcccdb9cdc56fc22795a2768d2763b86fa55ab47393fb4ad460e0d352279b"
+    },
+    {
+      "id": "transitionStraight",
+      "source": "hull-transition-diagonal-straight.png",
+      "file": "hull-prepared/hull-transition-diagonal-straight.png",
+      "rows": [
+        "HHSS",
+        "..HH"
+      ],
+      "width": 259,
+      "height": 129,
+      "sourceHash": "9d8d390b54744b3f5ddd34e7a77a54af73fd09f419b2defd8ba02c2868f164b7",
+      "textureHash": "23c3d7d0beeec6a62e9ccad3b32fa581164a10e20822d8f770048e0333c4d981"
+    },
+    {
+      "id": "extendedCornerFloor",
+      "source": "hull-corner-extended-floor.png",
+      "file": "hull-prepared/hull-corner-extended-floor.png",
+      "rows": [
+        "HS",
+        "HS",
+        "HH"
+      ],
+      "width": 131,
+      "height": 195,
+      "sourceHash": "75cdc8546c7aa1840ad372d1ebdb3275de5ba39dfaf70ed3acb9579002faf4e4",
+      "textureHash": "5539d693fc2cd8622e584514f70949b393027df71a59e084ea52589b3fd4a766"
+    },
+    {
+      "id": "transitionCorner",
+      "source": "hull-transition-diagonal-corner.png",
+      "file": "hull-prepared/hull-transition-diagonal-corner.png",
+      "rows": [
+        "HHS",
+        ".HH"
+      ],
+      "width": 193,
+      "height": 131,
+      "sourceHash": "5e35aeba816c3bfaef1ed2a63673ba429a7fc560b7e3b5a4d1a4591182d6ae56",
+      "textureHash": "7fd45b0b009338e60d2970db2a9c07cb8b12b141a72b7e48db73474b3cb32256"
+    },
+    {
+      "id": "tEmpty",
+      "source": "hull-junction-t-empty.png",
+      "file": "hull-prepared/hull-junction-t-empty.png",
+      "rows": [
+        "HHH",
+        ".H.",
+        ".H."
+      ],
+      "width": 195,
+      "height": 194,
+      "sourceHash": "5412a816a4853a026eb55e72a4e239531b40957ab2662eca069ce06edb836084",
+      "textureHash": "4a21710772c7c7e890d7e8e9c6d6c1aab81477fa9043587fde50c01fe5c11309"
+    },
+    {
+      "id": "tFloor",
+      "source": "hull-junction-t-floor.png",
+      "file": "hull-prepared/hull-junction-t-floor.png",
+      "rows": [
+        "HHH",
+        "SHS",
+        "SHS"
+      ],
+      "width": 195,
+      "height": 195,
+      "sourceHash": "a6bbf732ffd2dcbd69a6e96b843e61e389881fd036cde45e2fa863ea94cf6535",
+      "textureHash": "ceaab28e33a70a974d79d5babba4acb4ba2336f6004f2418be3296ba6e0bac23"
+    },
+    {
+      "id": "bend",
+      "source": "hull-diagonal-bend-empty.png",
+      "file": "hull-prepared/hull-diagonal-bend-empty.png",
+      "rows": [
+        "H.H",
+        ".H."
+      ],
+      "width": 196,
+      "height": 130,
+      "sourceHash": "4c79d1c2ddd758aecb6741f626fb4be654e43aad105a25c9db4baac91d10d9a8",
+      "textureHash": "0173e710da36d98068b57bb53a268f8331f45cf71fad84fec40ad8fc16c58287"
+    },
+    {
+      "id": "diagonalCross",
+      "source": "hull-diagonal-cross-empty.png",
+      "file": "hull-prepared/hull-diagonal-cross-empty.png",
+      "rows": [
+        "H.H",
+        ".H.",
+        "H.H"
+      ],
+      "width": 195,
+      "height": 196,
+      "sourceHash": "5a458d8ec2f2d9b2b7e0eaf1a3048f9a2a2162e21953cc902580618301263b34",
+      "textureHash": "48b9a569114d4055e67157c2fb7c23f4c656c1768e86e0101296c272136a263d"
+    },
+    {
+      "id": "hole",
+      "source": "hull-hole-empty.png",
+      "file": "hull-prepared/hull-hole-empty.png",
+      "rows": [
+        "HHH",
+        "H.H",
+        "HHH"
+      ],
+      "width": 193,
+      "height": 194,
+      "sourceHash": "5aee0f49ab2cbb37616ae5655e2cf2ec1ccdea23e3d1a85c25c6426cbf8def09",
+      "textureHash": "b6c89164051ae7780db9936a3623d3c0cd17ee151c7df115e705b782090b1687"
+    },
+    {
+      "id": "staircaseFloor",
+      "source": "hull-staircase-floor.png",
+      "file": "hull-prepared/hull-staircase-floor.png",
+      "rows": [
+        "HHSS",
+        ".HHS",
+        "..HH"
+      ],
+      "width": 274,
+      "height": 205,
+      "sourceHash": "cd7f59493ec411d40f8dac471837e467c8004d749448a0ee26e45b4409b9eb48",
+      "textureHash": "6d071f60bc05b9aa201b05ac3ddfa350a5a3ae5df73f606aefa85a9c4b746e52"
+    },
+    {
+      "id": "cardinalCross",
+      "source": "hull-cardinal-cross-empty.png",
+      "file": "hull-prepared/hull-cardinal-cross-empty.png",
+      "rows": [
+        ".H.",
+        "HHH",
+        ".H."
+      ],
+      "width": 202,
+      "height": 202,
+      "sourceHash": "57005ce89e96e722eb6a3c916aefb11e9c82bce55f8891cf8e7da20b250642cc",
+      "textureHash": "7a87017cbbf162ea051c9cb1b28372438454d4eff172f7b2c2709c974b0814e5"
+    },
+    {
+      "id": "chainFloorOneSide",
+      "source": "hull-diagonal-chain-floor-one-side.png",
+      "file": "hull-prepared/hull-diagonal-chain-floor-one-side.png",
+      "rows": [
+        "HSS",
+        ".HS",
+        "..H"
+      ],
+      "width": 209,
+      "height": 209,
+      "sourceHash": "eb377e03d3032061ec82706056d75c191e582d4785bd2f77f917b8e58086e392",
+      "textureHash": "6d3e0ddf7ba9bfb2e7e4d48bae5dce8b44e7e4e3c1425c13ef36b2ac7d5ea248"
+    },
+    {
+      "id": "diagonalCornerFloor",
+      "source": "hull-diagonal-corner-floor-transition.png",
+      "file": "hull-prepared/hull-diagonal-corner-floor-transition.png",
+      "rows": [
+        "..H",
+        ".HH",
+        "HSS"
+      ],
+      "width": 206,
+      "height": 207,
+      "sourceHash": "35cbf29a0d026c31dd5291e12f3b1ec0f69a90c02b9a3271c35eb76d66e9eb81",
+      "textureHash": "1186f8cd8ec64bdd8f0eb91119c98639647e184df225d1ba51b22d1d6f1885a1"
+    },
+    {
+      "id": "checkerboardMixedFloor",
+      "source": "hull-diagonal-checkerboard-mixed-floor.png",
+      "file": "hull-prepared/hull-diagonal-checkerboard-mixed-floor.png",
+      "rows": [
+        "HSH",
+        ".H.",
+        "HSH"
+      ],
+      "width": 206,
+      "height": 207,
+      "sourceHash": "9f584b48236505a59ae350627381b0577d9434e8c35d30249e7ff767dd4c66b2",
+      "textureHash": "ddd58a18851c848671c90565fdabc2c3464d94e4a348863eadd4c9b0d9aaad17"
+    },
+    {
+      "id": "diagonalJunctionMixedFloor",
+      "source": "hull-diagonal-junction-mixed-floor.png",
+      "file": "hull-prepared/hull-diagonal-junction-mixed-floor.png",
+      "rows": [
+        "HSH",
+        ".H.",
+        "H.H"
+      ],
+      "width": 208,
+      "height": 207,
+      "sourceHash": "a837afca1eb8c6abd2c5aa4593fc2c994d956594280c09c81a644c17d7fcc667",
+      "textureHash": "ad92dff1a036f6e695a3974a1071e2b60c2ab591179b57809c88b62f6dcb565c"
+    },
+    {
+      "id": "parallelDiagonalChains",
+      "source": "hull-parallel-diagonal-chains.png",
+      "file": "hull-prepared/hull-parallel-diagonal-chains.png",
+      "rows": [
+        "H.H.",
+        ".H.H",
+        "H.H."
+      ],
+      "width": 273,
+      "height": 209,
+      "sourceHash": "0fa46f1eb836953a83f918fd5b455262d783f3732197bbb5762967b9e018ea82",
+      "textureHash": "e287d988ded9b19b8cf3999014ab6eb8b73bb3ad0c0aa37495b7e0a23f2e8eb9"
+    },
+    {
+      "id": "parallelDiagonalChains90",
+      "source": "hull-parallel-diagonal-chains-90.png",
+      "file": "hull-prepared/hull-parallel-diagonal-chains-90.png",
+      "rows": [
+        "H.H",
+        ".H.",
+        "H.H",
+        ".H."
+      ],
+      "width": 277,
+      "height": 371,
+      "sourceHash": "8f509f9a52bd9e7ea26c7c227d6a132541ee4d273283c2918ea65b7375730724",
+      "textureHash": "a7b80e2b75fcee8270846ce84e021532f93e2d305e2f9c9c2995f0ce3e80e591"
+    },
+    {
+      "id": "parallelDiagonalChains270",
+      "source": "hull-parallel-diagonal-chains-270.png",
+      "file": "hull-prepared/hull-parallel-diagonal-chains-270.png",
+      "rows": [
+        ".H.",
+        "H.H",
+        ".H.",
+        "H.H"
+      ],
+      "width": 277,
+      "height": 375,
+      "sourceHash": "242a95e03c983ccb4fd588b159fa97cf6f6f2822894a4b8bdfe84ab2bc7a6750",
+      "textureHash": "f96ac24da63804148d91c49a1c2669b727b07d7872522df80396b77811288fe3"
+    },
+    {
+      "id": "crossMixedFloor",
+      "source": "hull-cross-mixed-floor.png",
+      "file": "hull-prepared/hull-cross-mixed-floor.png",
+      "rows": [
+        "SH.",
+        "HHH",
+        ".HS"
+      ],
+      "width": 207,
+      "height": 214,
+      "sourceHash": "71f9716c8f66e07018700769acaf41af0b09bc256f6529e13b45d6f1612df5c1",
+      "textureHash": "3cf82f748784f710a276c86e67140c8ac2ee8fb250440e8c9f9b1cadf72aef11"
+    }
+  ]
+}

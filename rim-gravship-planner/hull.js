@@ -38,7 +38,7 @@ export const HULL_REFERENCES=[
   ['parallelDiagonalChains90','hull-parallel-diagonal-chains-90.png',['H.H','.H.','H.H','.H.'],['0,0','2,0','1,1']],
   ['parallelDiagonalChains270','hull-parallel-diagonal-chains-270.png',['.H.','H.H','.H.','H.H'],['1,2','0,3','2,3']],
   ['crossMixedFloor','hull-cross-mixed-floor.png',['SH.','HHH','.HS']],
-].map(([id,file,rows,singles=[]])=>Object.freeze({id,file,rows,singles:Object.freeze(singles),cols:rows[0].length,height:rows.length}));
+].map(([id,file,rows,singles=[]])=>Object.freeze({id,file,rows,singles:Object.freeze(singles),cols:rows[0].length,height:rows.length,texture:`hull-prepared/${file}`}));
 const at=(rows,x,y)=>rows[y]?.[x]||'.';
 const idx=(x,y)=>(y+2)*5+x+2;
 function transform(x,y,turns,flip){if(flip)x=-x;for(let t=0;t<turns;t++)[x,y]=[-y,x];return [x,y];}
@@ -144,48 +144,85 @@ function orthogonalQuarter(signature,qx,qy){
   const template=orthogonalTemplates.get(k);
   return template?{...template,method:'orthogonal'}:null;
 }
-export function hullTopology(s){
-  initializeReferences();
-  const hull=new Set(s.hull),floor=new Set(s.floor),cells=new Set(hull),tiles=new Map();
-  const occupied=new Set((s.components||[]).flatMap(componentCells));
+function hullIndex(s){
+  const hull=new Set(s.hull),floor=new Set(s.floor),candidates=new Set(hull),occupied=new Set(),barriers=new Map();
+  for(const c of s.components||[]){
+    for(const k of componentCells(c))occupied.add(k);
+    if(c.type==='vac-barrier'){
+      const mask=(barrierJoins(c,0,-1)?1:0)|(barrierJoins(c,1,0)?2:0)|(barrierJoins(c,0,1)?4:0)|(barrierJoins(c,-1,0)?8:0);
+      const k=key(c.x,c.y);barriers.set(k,(barriers.get(k)||0)|mask);
+    }
+  }
   for(const e of s.extenders||[])occupied.add(key(e.x,e.y));
   if(s.engine)for(let y=s.engine.y-1;y<=s.engine.y+1;y++)for(let x=s.engine.x-1;x<=s.engine.x+1;x++)occupied.add(key(x,y));
-  for(const k of hull){const [x,y]=point(k);for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)cells.add(key(x+dx,y+dy));}
-  const emptyCorners=new Set();
-  for(const k of cells){
-    if(hull.has(k)||floor.has(k)||occupied.has(k))continue;
-    const [x,y]=point(k);
-    if([[1,1],[-1,1],[-1,-1],[1,-1]].some(([sx,sy])=>hull.has(key(x+sx,y))&&hull.has(key(x,y+sy))))emptyCorners.add(k);
+  for(const k of hull){const [x,y]=point(k);for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)candidates.add(key(x+dx,y+dy));}
+  return {hull,floor,candidates,occupied,barriers,emptyCorners:new Set()};
+}
+const adjacentHull=(x,y,hull)=>[[1,1],[-1,1],[-1,-1],[1,-1]].some(([sx,sy])=>hull.has(key(x+sx,y))&&hull.has(key(x,y+sy)));
+function emptyCorner(k,index){
+  if(index.hull.has(k)||index.floor.has(k)||index.occupied.has(k))return false;
+  const [x,y]=point(k);return adjacentHull(x,y,index.hull);
+}
+function barrierAt(mask,dx,dy){
+  return dx===0&&dy===-1?mask&1:dx===1&&dy===0?mask&2:dx===0&&dy===1?mask&4:dx===-1&&dy===0?mask&8:0;
+}
+function hullCell(k,index){
+  if(!index.candidates.has(k))return null;
+  const {hull,floor,occupied,barriers,emptyCorners}=index,[x,y]=point(k),host=hull.has(k)?'H':floor.has(k)?'S':'.';
+  if(host!=='H'&&(occupied.has(k)||!adjacentHull(x,y,hull)))return null;
+  const signature=[];
+  for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){
+    const nx=x+dx,ny=y+dy,n=key(nx,ny),virtual=barrierAt(barriers.get(n)||0,-dx,-dy);
+    signature.push(hull.has(n)||virtual?'H':floor.has(n)?'S':'.');
   }
-  for(const k of cells){
-    const [x,y]=point(k),host=hull.has(k)?'H':floor.has(k)?'S':'.';
-    if(host!=='H'){
-      if(occupied.has(k))continue;
-      // Only a pair of adjacent cardinal hull neighbors can decorate an empty/floor cell.
-      const adjacent=[[1,1],[-1,1],[-1,-1],[1,-1]].some(([sx,sy])=>hull.has(key(x+sx,y))&&hull.has(key(x,y+sy)));
-      if(!adjacent)continue;
+  const context=signature.join(''),quarters=host==='H'?[]:chooseCell(context);
+  if(host==='H'){
+    let hasDiagonalJoin=false;
+    for(let dy=-2;dy<=2&&!hasDiagonalJoin;dy++)for(let dx=-2;dx<=2;dx++)if(emptyCorners.has(key(x+dx,y+dy))){hasDiagonalJoin=true;break;}
+    for(let qy=0;qy<2;qy++)for(let qx=0;qx<2;qx++){
+      const selected=chooseQuarter(context,qx,qy);
+      quarters.push(!hasDiagonalJoin&&selected?.signature!==context?orthogonalQuarter(context,qx,qy)||selected:selected);
     }
-    const signature=[];
-    for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){
-      const nx=x+dx,ny=y+dy,n=key(nx,ny);
-      const virtual=(s.components||[]).some(c=>c.x===nx&&c.y===ny&&barrierJoins(c,x-nx,y-ny));
-      signature.push(hull.has(n)||virtual?'H':floor.has(n)?'S':'.');
-    }
-    const context=signature.join(''),quarters=host==='H'?[]:chooseCell(context);
-    if(host==='H'){
-      let hasDiagonalJoin=false;
-      for(let dy=-2;dy<=2&&!hasDiagonalJoin;dy++)for(let dx=-2;dx<=2;dx++)if(emptyCorners.has(key(x+dx,y+dy))){hasDiagonalJoin=true;break;}
-      for(let qy=0;qy<2;qy++)for(let qx=0;qx<2;qx++){
-        const selected=chooseQuarter(context,qx,qy);
-        // Fully floor-separated hull uses ordinary wall pieces. Distant floor
-        // changes must not introduce a rotated bevel, end cap or false seam.
-        quarters.push(!hasDiagonalJoin&&selected?.signature!==context?orthogonalQuarter(context,qx,qy)||selected:selected);
-      }
-    }
-    const single=host==='H'&&quarters.length===4&&quarters.every(q=>q?.ref.singles.includes(key(q.x,q.y)))?quarters[0]:null;
-    if(quarters.length)tiles.set(k,{x,y,host,context,quarters,single});
   }
-  return {tiles};
+  const single=host==='H'&&quarters.length===4&&quarters.every(q=>q?.ref.singles.includes(key(q.x,q.y)))?quarters[0]:null;
+  return quarters.length?{x,y,host,context,quarters,single}:null;
+}
+function fullHullLayout(index){
+  const tiles=new Map();
+  for(const k of index.candidates)if(emptyCorner(k,index))index.emptyCorners.add(k);
+  for(const k of index.candidates){const cell=hullCell(k,index);if(cell)tiles.set(k,cell);}
+  return {tiles,_index:index,stats:{mode:'full',evaluated:index.candidates.size}};
+}
+export function hullTopology(s){
+  initializeReferences();return fullHullLayout(hullIndex(s));
+}
+function changedKeys(before,after,changed){
+  for(const k of before.keys())if(!after.has(k)||before instanceof Map&&before.get(k)!==after.get(k))changed.add(k);
+  for(const k of after.keys())if(!before.has(k))changed.add(k);
+}
+function expandKeys(keys,radius){
+  const expanded=new Set();
+  for(const k of keys){const [x,y]=point(k);for(let dy=-radius;dy<=radius;dy++)for(let dx=-radius;dx<=radius;dx++)expanded.add(key(x+dx,y+dy));}
+  return expanded;
+}
+export function updateHullTopology(previous,s){
+  if(!previous?._index)return hullTopology(s);
+  const index=hullIndex(s),before=previous._index,changed=new Set();
+  for(const name of ['hull','floor','occupied','barriers'])changedKeys(before[name],index[name],changed);
+  if(!changed.size){index.emptyCorners=before.emptyCorners;return {tiles:previous.tiles,_index:index,stats:{mode:'unchanged',evaluated:0}};}
+  // A corner depends on its cardinal neighbors, and its influence reaches two
+  // more tiles. Keep the full three-tile dependency radius for every edit type.
+  if(changed.size>Math.max(256,index.hull.size/2))return fullHullLayout(index);
+  const dirty=expandKeys(changed,3);
+  if(dirty.size>Math.max(256,before.candidates.size*.75))return fullHullLayout(index);
+  index.emptyCorners=new Set(before.emptyCorners);
+  for(const k of expandKeys(changed,1)){if(emptyCorner(k,index))index.emptyCorners.add(k);else index.emptyCorners.delete(k);}
+  const updated=new Map();
+  for(const k of dirty){const cell=hullCell(k,index);if(cell)updated.set(k,cell);}
+  // Preserve the full builder's draw order while sharing every untouched cell.
+  const tiles=new Map();
+  for(const k of index.candidates){const cell=dirty.has(k)?updated.get(k):previous.tiles.get(k);if(cell)tiles.set(k,cell);}
+  return {tiles,_index:index,stats:{mode:'incremental',evaluated:dirty.size}};
 }
 // Hull reference pixels are neutral grays; the supplied terrain/floor backgrounds
 // are blue-gray. Remove that backdrop at runtime, leaving source PNGs untouched.
