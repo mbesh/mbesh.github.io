@@ -23,13 +23,13 @@ main{grid-template-columns:minmax(0,1fr) 270px}
 .floating-palette,.floating-tools{position:absolute;z-index:3;background:#232c30f5;border:1px solid #52645d;border-radius:7px;box-shadow:0 8px 24px #0b151952}
 .floating-palette{top:16px;left:16px;width:280px;max-height:calc(100% - var(--tool-clearance));overflow:auto;scrollbar-width:thin;scrollbar-color:#63766b #233031;overscroll-behavior:contain}
 .floating-palette>summary{position:sticky;top:0;z-index:4;display:flex;justify-content:space-between;align-items:center;min-height:44px;padding:11px 14px;background:#2b383b;color:#dce6da;font-weight:600;cursor:pointer;list-style:none}
+.floating-tools #select-mode{width:106px;min-height:44px;padding:6px;font-size:12px;text-align:center;margin:0;flex-shrink:0}
 .floating-palette>summary::-webkit-details-marker{display:none}
 .floating-palette>summary::after{content:'+';font-size:20px;font-weight:400;line-height:1;color:#a9c3b6}
 .floating-palette[open]>summary::after{content:'−'}
 .floating-palette summary:focus-visible{outline:2px solid #9cddce;outline-offset:-3px}
 .floating-palette section{padding:12px}
 .floating-palette .palette-section>h2{display:none}
-.floating-palette #select-mode{padding:8px 10px;font-size:12px;margin-bottom:9px}
 .floating-palette #palette{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .floating-palette #palette .palette-item{width:100%;min-width:0;gap:7px;padding:8px 6px;min-height:52px}
 .floating-palette #palette .palette-item img{width:27px;height:30px;object-fit:contain;flex-shrink:0}
@@ -60,6 +60,13 @@ main{grid-template-columns:minmax(0,1fr) 270px}
 .floating-tools .segmented{margin:0}
 .floating-tools #pan-mode{min-height:44px;padding:6px 10px;font-size:12px}
 .mobile-shape,.touch-help{display:none}
+.selection-info{grid-column:1;grid-row:1;min-width:0}
+.selection-info span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;color:#dce6da}
+.selection-info small{display:block;margin-top:4px;font-size:11px;color:#a9beb2}
+.selection-info[hidden],.remove-selected[hidden]{display:none}
+.remove-selected{min-height:44px;padding:6px 10px;font-size:12px;color:#f0b6a6;border-color:#9a6e62}
+.remove-selected:hover{background:#523c36}
+.floating-tools.selection-mode>h2,.floating-tools.selection-mode .shapes,.floating-tools.selection-mode .mobile-shape,.floating-tools.selection-mode .segmented{display:none}
 .floating-tools .segmented button{flex:none;width:auto;white-space:nowrap;padding:6px 12px;font-size:12px;min-height:33px}
 .floating-tools .shapes{grid-column:1/-1;grid-row:2;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
 .floating-tools .shapes button{padding:7px 3px;font-size:10px;min-width:0;line-height:1.3}
@@ -129,7 +136,9 @@ select:focus-visible{outline:2px solid #9cddce;outline-offset:3px}
   .mobile-shape{display:block;flex:1;min-width:88px}
   .mobile-shape>span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
   #shape-picker{width:100%;min-height:44px;background:#2b363b;color:#d5dcd9;border:1px solid #60716b;border-radius:4px;padding:5px;font:inherit;font-size:12px}
-  .floating-tools .tool-actions{flex:none;gap:6px}
+  .floating-tools .tool-actions{flex:1 1 100%;order:-1;gap:6px;justify-content:flex-end}
+  .floating-tools:not(.can-draw) .mobile-shape{display:none}
+  .floating-tools.selection-mode .selection-info{flex:1 1 100%}
   .floating-tools .segmented button{min-width:44px;min-height:44px;padding:6px 8px}
   .floating-tools #pan-mode{min-width:44px;min-height:44px;padding:6px 8px}
   .floating-tools #rotation-controls{flex-basis:100%;padding-top:6px;gap:8px}
@@ -142,7 +151,6 @@ select:focus-visible{outline:2px solid #9cddce;outline-offset:3px}
   #palette-panel[open]~.zoom,#palette-panel[open]~.board-legend{visibility:hidden}
   .floating-palette[open]{z-index:4}
   .floating-palette{max-height:calc(100% - 24px)}
-  .floating-palette #select-mode{min-height:44px}
   .floating-settings>summary{min-height:44px}
   .floating-palette input[type=search],#save-name{font-size:16px;min-height:44px}
   .floating-settings label{min-height:44px}
@@ -180,6 +188,8 @@ select:focus-visible{outline:2px solid #9cddce;outline-offset:3px}
   header nav{flex-shrink:0}
   .canvas-top{min-height:48px;padding-top:2px;padding-bottom:2px}
   .floating-tools .mobile-shape{flex:1;max-width:160px}
+  .floating-tools .tool-actions{flex:0 0 auto;order:0}
+  .floating-tools.selection-mode .selection-info{flex:1}
   .floating-tools #rotation-controls{flex:1;min-width:200px;flex-basis:200px;border-top:0;padding-top:0}
   .floating-tools #component-wiki{display:none}
   .board-legend{display:none}

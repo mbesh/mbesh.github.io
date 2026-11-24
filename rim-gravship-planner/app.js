@@ -62,6 +62,22 @@ function changed(){dirty=true;draft();refresh();}
 function commit(next){if(JSON.stringify(next)===JSON.stringify(state))return;undo.push(structuredClone(state));if(undo.length>80)undo.shift();redo=[];state=next;changed();}
 function chooseLayer(v){if(drag)finish(null,true);panMode=false;layer=v;selection=null;erase=false;rotation=0;if(v==='engine'||v==='extender'||componentDefinition(v))shape='single';refresh();}
 $('select-mode').onclick=()=>{chooseLayer(null);collapsePaletteOnNarrowScreen();};
+$('remove-selected').onclick=removeSelected;
+function selectionName(){
+  const p=itemPosition(state,selection);
+  if(!p)return null;
+  return selection.kind==='component'?componentDefinition(p.type,state).name:selection.kind==='engine'?engineProfile(state).name:selection.kind==='extender'?extenderProfile(state).name:selection.kind==='hull'?'Hull tile':selection.kind==='scaffold'?'Subscaffold tile':'Substructure tile';
+}
+function removeSelected(){
+  if(layer||panMode||touchNavigation||!itemPosition(state,selection))return;
+  if(drag)finish(null,true);
+  const name=selectionName(),p=itemPosition(state,selection);
+  // Remove the exact selected instance, including when pipe layers overlap.
+  const next=selection.kind==='component'?{...state,components:state.components.filter((_,i)=>i!==selection.index)}:
+    selection.kind==='extender'?{...state,extenders:state.extenders.filter((_,i)=>i!==selection.index)}:
+    apply(state,selection.kind,[key(p.x,p.y)],true).state;
+  selection=null;hover=null;commit(next);toast(`${name} removed. Undo to restore.`);
+}
 $('pan-mode').onclick=()=>{if(drag)finish(null,true);panMode=!panMode;hover=null;collapsePaletteOnNarrowScreen();refresh();};
 for(const [id,label,description,file] of palette){const b=document.createElement('button');b.className='palette-item';b.dataset.layer=id;b.title=`${label}. ${description}`;b.innerHTML=`<img src="assets/${file}" alt=""><div><strong>${label}</strong><small>${description}</small></div>`;b.onclick=()=>{chooseLayer(id);collapsePaletteOnNarrowScreen();};$('palette').append(b);}
 $('component-palette-count').textContent=availableComponents(state).length;
@@ -143,18 +159,22 @@ if(layer==='engine'){$('mode-label').textContent=`${erase?'Erase':'Place'} ${eng
 if(layer==='extender')$('tool-hint').textContent=`Place in the original engine field${normalizeMods(state.mods).chapter1?' or an amplifier field':''}. Radius ${extenderProfile(state).fieldRadius}; +${extenderProfile(state).supportOffset} tiles; maximum ${extenderProfile(state).limit}.`;
 if(layer==='scaffold')$('tool-hint').textContent='Draw a walkway that connects substructure without using capacity. Subscaffold cannot support buildings.';
 if((shape==='circle'||shape==='disc')&&!erase)$('tool-hint').textContent=`Drag from center to edge. A ${Math.floor(engineProfile(state).fieldRadius)}-tile reach matches the engine field; ${Math.floor(extenderProfile(state).fieldRadius)} matches an extender.`;
-$('select-mode').classList.toggle('active',!layer);$('select-mode').setAttribute('aria-pressed',!layer);
+$('select-mode').classList.toggle('active',!layer&&!panMode);$('select-mode').setAttribute('aria-pressed',!layer&&!panMode);
+const selecting=!layer&&!panMode,name=selectionName();
+$('drawing-toolbar').classList.toggle('selection-mode',selecting);
+$('drawing-toolbar').classList.toggle('can-draw',!!layer&&!panMode&&layer!=='engine'&&layer!=='extender'&&!componentDefinition(layer,state));
+$('selection-info').hidden=!selecting;$('selection-name').textContent=name||'Select an item';$('selection-name').title=name||'Choose an item on the grid to move or remove it.';
+$('remove-selected').hidden=!selecting;$('remove-selected').disabled=!selecting||!name||touchNavigation;
+$('remove-selected').setAttribute('aria-label',name?`Remove ${name}`:'Remove selected item');
 $('add').disabled=$('erase').disabled=!layer;
 $('pan-mode').classList.toggle('active',panMode);$('pan-mode').setAttribute('aria-pressed',panMode);
 $('shape-picker').value=shape;
 $('shape-picker').disabled=panMode||!layer||layer==='engine'||layer==='extender'||!!componentDefinition(layer,state);
 if(panMode){$('add').disabled=$('erase').disabled=true;document.querySelectorAll('[data-shape]').forEach(b=>b.disabled=true);}
 if(!layer){
-  const p=itemPosition(state,selection);
-  const name=selection?.kind==='component'?componentDefinition(p?.type,state)?.name:selection?.kind==='engine'?'Grav engine':selection?.kind==='extender'?'Field extender':selection?.kind==='hull'?'Hull tile':selection?.kind==='floor'?'Substructure tile':null;
   $('mode-label').textContent=name?`${name} selected`:'Select / move';
-  $('shape-label').textContent='Drag to move';
-  $('tool-hint').textContent='Click an item to select it, then drag it to a new position. Right-click or press Esc to clear selection. Moves preserve rotation and can be undone.';
+  $('shape-label').textContent=name?'Drag to move · Remove selected or Delete':'Choose an item to move or remove';
+  $('tool-hint').textContent='Select an item on the grid, then drag it to move or choose Remove selected. Delete / Backspace also removes the selection. Moves and removals can be undone.';
 }
 canvas.style.cursor=drag?.pan||drag?.move||touchNavigation?'grabbing':panMode?'grab':layer?'crosshair':selection?'grab':'default';
 const selected=componentDefinition(layer,state);
@@ -435,7 +455,7 @@ function zoomBy(f,at={x:width/2,y:height/2}){const next=Math.max(8,Math.min(58,z
 canvas.addEventListener('wheel',e=>{e.preventDefault();const r=canvas.getBoundingClientRect();zoomBy(Math.exp(-e.deltaY*.001),{x:e.clientX-r.left,y:e.clientY-r.top});},{passive:false});$('zoom-in').onclick=()=>zoomBy(1.25);$('zoom-out').onclick=()=>zoomBy(.8);
 function center(){const tiles=[...state.floor,...state.hull,...engineFootprint(state),...(state.scaffold||[]),...state.extenders.map(e=>key(e.x,e.y)),...(state.components||[]).flatMap(componentCells)];if(!tiles.length){offset={x:0,y:0};zoom=22;}else{const ps=tiles.map(point),xs=ps.map(p=>p[0]),ys=ps.map(p=>p[1]),a=Math.min(...xs),b=Math.max(...xs),c=Math.min(...ys),d=Math.max(...ys);zoom=Math.max(8,Math.min(32,(width-120)/(b-a+5),(height-120)/(d-c+5)));offset={x:-(a+b+1)/2*zoom,y:-(c+d+1)/2*zoom};}hover=null;render();}$('center').onclick=center;
 function history(back){const from=back?undo:redo,to=back?redo:undo;if(!from.length)return;if(drag)finish(null,true);selection=null;to.push(structuredClone(state));state=from.pop();changed();}$('undo').onclick=()=>history(true);$('redo').onclick=()=>history(false);
-window.addEventListener('keydown',e=>{if(e.target.matches('input,textarea,select')||document.querySelector('dialog[open]'))return;if(!e.ctrlKey&&!e.metaKey&&!e.altKey&&['q','e'].includes(e.key.toLowerCase())){e.preventDefault();rotateSelected(e.key.toLowerCase()==='q'?-1:1);}if(e.code==='Space'){space=true;e.preventDefault();}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();history(!e.shiftKey);}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();requestSave();}if(e.key==='Escape'){chooseLayer(null);hover=null;render();}});window.addEventListener('keyup',e=>{if(e.code==='Space')space=false;});window.addEventListener('blur',()=>{space=false;finish(null,true);touchPointers.clear();gesture=null;touchNavigation=false;});
+window.addEventListener('keydown',e=>{if(e.target.matches('input,textarea,select')||document.querySelector('dialog[open]'))return;if(!e.ctrlKey&&!e.metaKey&&!e.altKey&&['Delete','Backspace'].includes(e.key)&&!layer&&!panMode&&selection){e.preventDefault();removeSelected();return;}if(!e.ctrlKey&&!e.metaKey&&!e.altKey&&['q','e'].includes(e.key.toLowerCase())){e.preventDefault();rotateSelected(e.key.toLowerCase()==='q'?-1:1);}if(e.code==='Space'){space=true;e.preventDefault();}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();history(!e.shiftKey);}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();requestSave();}if(e.key==='Escape'){chooseLayer(null);hover=null;render();}});window.addEventListener('keyup',e=>{if(e.code==='Space')space=false;});window.addEventListener('blur',()=>{space=false;finish(null,true);touchPointers.clear();gesture=null;touchNavigation=false;});
 $('name').oninput=()=>{dirty=true;draft();statusDirty=true;render();};
 let confirmAction=null;function confirm(title,text,action){$('confirm-title').textContent=title;$('confirm-text').textContent=text;confirmAction=action;$('confirm-dialog').showModal();}$('cancel-confirm').onclick=()=>$('confirm-dialog').close();$('accept-confirm').onclick=()=>{$('confirm-dialog').close();confirmAction?.();};
 function save(){const library=[...readLibrary()],id=savedId||crypto.randomUUID(),name=$('name').value.trim()||'Untitled gravship';const item={id,name,updated:Date.now(),state:structuredClone(state)},i=library.findIndex(d=>d.id===id);if(i>=0)library[i]=item;else library.push(item);if(store(STORAGE,library)){savedId=id;dirty=false;$('name').value=name;draft();refresh();toast('Design saved in this browser.');return true;}return false;}
