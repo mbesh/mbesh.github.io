@@ -82,8 +82,13 @@ function removeSelected(){
 $('pan-mode').onclick=()=>{if(drag)finish(null,true);panMode=!panMode;hover=null;collapsePaletteOnNarrowScreen();refresh();};
 for(const [id,label,description,file] of palette){const b=document.createElement('button');b.className='palette-item';b.dataset.layer=id;b.title=`${label}. ${description}`;b.innerHTML=`<img src="assets/${file}" alt=""><div><strong>${label}</strong><small>${description}</small></div>`;b.onclick=()=>{chooseLayer(id);collapsePaletteOnNarrowScreen();};$('palette').append(b);}
 $('component-palette-count').textContent=availableComponents(state).length;
-for(const group of [...new Set(COMPONENTS.map(c=>c.group))]){
+const componentGroups=new Map(),modPaletteGroups={'pilot-console':'Platform','small-tank':'Fuel network','large-tank':'Fuel network'};
+const componentGroupOrder=[...new Set(COMPONENTS.map(c=>c.group))];
+componentGroupOrder.splice(componentGroupOrder.indexOf('Platform'),1);
+componentGroupOrder.splice(componentGroupOrder.indexOf('Structure')+1,0,'Platform');
+for(const group of componentGroupOrder){
   const category=document.createElement('details');category.className='component-group';category.dataset.group=group;category.open=true;
+  componentGroups.set(group,category);
   const heading=document.createElement('summary');heading.textContent=group;category.append(heading);$('component-options').append(category);
   for(const c of COMPONENTS.filter(c=>c.group===group)){
     const b=document.createElement('button');b.className='palette-item component-item';b.dataset.layer=c.id;b.dataset.group=group;
@@ -121,6 +126,8 @@ function refreshModControls(){
   });
   document.querySelectorAll('.component-item').forEach(b=>{
     const d=componentDefinition(b.dataset.layer,state),strong=b.querySelector('strong'),small=b.querySelector('small'),im=b.querySelector('img');
+    const group=mods.chapter1&&modPaletteGroups[d.id]||d.group;
+    if(b.dataset.group!==group){b.dataset.group=group;componentGroups.get(group).append(b);}
     if(strong)strong.textContent=d.name;
     if(small)small.textContent=`${d.width} × ${d.height} · ${d.limit?'max. '+d.limit:'no stated limit'}${d.chapter?' · Ch. '+d.chapter:''}`;
     if(im)im.src=`assets/${d.icon||componentSprite({type:d.id,rotation:0},state).file}`;
