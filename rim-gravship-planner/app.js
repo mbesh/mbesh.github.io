@@ -60,7 +60,8 @@ function store(k,v){try{localStorage.setItem(k,JSON.stringify(v));if(k===STORAGE
 function draft(){clearTimeout(draftTimer);draftTimer=setTimeout(()=>store(DRAFT,{state,name:$('name').value,savedId,dirty}),250);}
 function changed(){dirty=true;draft();refresh();}
 function commit(next){if(JSON.stringify(next)===JSON.stringify(state))return;undo.push(structuredClone(state));if(undo.length>80)undo.shift();redo=[];state=next;changed();}
-function chooseLayer(v){if(drag)finish(null,true);panMode=false;layer=v;selection=null;erase=false;rotation=0;if(v==='engine'||v==='extender'||componentDefinition(v))shape='single';refresh();}
+function paintableLayer(type=layer){const def=componentDefinition(type,state);return !!type&&type!=='engine'&&type!=='extender'&&(!def||!!def.paintable);}
+function chooseLayer(v){if(drag)finish(null,true);panMode=false;layer=v;selection=null;erase=false;rotation=0;if(v&&!paintableLayer(v))shape='single';refresh();}
 $('select-mode').onclick=()=>{chooseLayer(null);collapsePaletteOnNarrowScreen();};
 $('remove-selected').onclick=removeSelected;
 function selectionName(){
@@ -164,7 +165,7 @@ $('add').onclick=()=>{erase=false;refresh();};$('erase').onclick=()=>{erase=true
 for(const id of ['grid','field','issues','exhaust'])$(id).onchange=render;
 $('diagonal-hull').onchange=()=>{if($('diagonal-hull').checked)loadHullTextures();render();};
 function refresh(){toolsDirty=true;statusDirty=true;render();}
-function refreshTools(){document.querySelectorAll('[data-layer]').forEach(b=>{const selected=b.dataset.layer===layer;b.classList.toggle('active',selected);b.setAttribute('aria-pressed',selected);});document.querySelectorAll('[data-shape]').forEach(b=>{b.classList.toggle('active',b.dataset.shape===shape);b.setAttribute('aria-pressed',b.dataset.shape===shape);b.disabled=!layer||(layer==='engine'||layer==='extender'||componentDefinition(layer))&&b.dataset.shape!=='single';});$('add').classList.toggle('active',!erase);$('erase').classList.toggle('active',erase);$('add').setAttribute('aria-pressed',!erase);$('erase').setAttribute('aria-pressed',erase);$('mode-label').textContent=`${erase?'Erase':'Place'} ${(componentDefinition(layer,state)?.name||palette.find(p=>p[0]===layer)?.[1]||'component').toLowerCase()}`;$('shape-label').textContent=shapes.find(s=>s[0]===shape)[2];$('tool-hint').textContent=erase?'Erase affects the selected palette layer. Erasing the engine also removes its extenders.':layer==='engine'?'Click to place the engine. Its center anchors the grav field.':layer==='extender'?'Place inside the engine’s original field. Adds a 17-tile field and 250 tiles of capacity.':shape==='single'?'Click or drag to paint individual tiles. Right-click to erase the selected layer.':shape==='circle'||shape==='disc'?'Drag from the center to the outermost tile. An 18-tile reach matches the engine field; 16 matches an extender.':'Drag between two tiles. Release to draw the shape.';
+function refreshTools(){document.querySelectorAll('[data-layer]').forEach(b=>{const selected=b.dataset.layer===layer;b.classList.toggle('active',selected);b.setAttribute('aria-pressed',selected);});document.querySelectorAll('[data-shape]').forEach(b=>{b.classList.toggle('active',b.dataset.shape===shape);b.setAttribute('aria-pressed',b.dataset.shape===shape);b.disabled=!layer||!paintableLayer()&&b.dataset.shape!=='single';});$('add').classList.toggle('active',!erase);$('erase').classList.toggle('active',erase);$('add').setAttribute('aria-pressed',!erase);$('erase').setAttribute('aria-pressed',erase);$('mode-label').textContent=`${erase?'Erase':'Place'} ${(componentDefinition(layer,state)?.name||palette.find(p=>p[0]===layer)?.[1]||'component').toLowerCase()}`;$('shape-label').textContent=shapes.find(s=>s[0]===shape)[2];$('tool-hint').textContent=erase?'Erase affects the selected palette layer. Erasing the engine also removes its extenders.':layer==='engine'?'Click to place the engine. Its center anchors the grav field.':layer==='extender'?'Place inside the engine’s original field. Adds a 17-tile field and 250 tiles of capacity.':shape==='single'?'Click or drag to paint individual tiles. Right-click to erase the selected layer.':shape==='circle'||shape==='disc'?'Drag from the center to the outermost tile. An 18-tile reach matches the engine field; 16 matches an extender.':'Drag between two tiles. Release to draw the shape.';
 refreshModControls();
 if(layer==='engine'){$('mode-label').textContent=`${erase?'Erase':'Place'} ${engineProfile(state).name.toLowerCase()}`;$('shape-label').textContent=`${engineProfile(state).width} × ${engineProfile(state).height}`;}
 if(layer==='extender')$('tool-hint').textContent=`Place in the original engine field${normalizeMods(state.mods).chapter1?' or an amplifier field':''}. Radius ${extenderProfile(state).fieldRadius}; +${extenderProfile(state).supportOffset} tiles; maximum ${extenderProfile(state).limit}.`;
@@ -173,14 +174,14 @@ if((shape==='circle'||shape==='disc')&&!erase)$('tool-hint').textContent=`Drag f
 $('select-mode').classList.toggle('active',!layer&&!panMode);$('select-mode').setAttribute('aria-pressed',!layer&&!panMode);
 const selecting=!layer&&!panMode,name=selectionName();
 $('drawing-toolbar').classList.toggle('selection-mode',selecting);
-$('drawing-toolbar').classList.toggle('can-draw',!!layer&&!panMode&&layer!=='engine'&&layer!=='extender'&&!componentDefinition(layer,state));
+$('drawing-toolbar').classList.toggle('can-draw',!panMode&&paintableLayer());
 $('selection-info').hidden=!selecting;$('selection-name').textContent=name||'Select an item';$('selection-name').title=name||'Choose an item on the grid to move or remove it.';
 $('remove-selected').hidden=!selecting;$('remove-selected').disabled=!selecting||!name||touchNavigation;
 $('remove-selected').setAttribute('aria-label',name?`Remove ${name}`:'Remove selected item');
 $('add').disabled=$('erase').disabled=!layer;
 $('pan-mode').classList.toggle('active',panMode);$('pan-mode').setAttribute('aria-pressed',panMode);
 $('shape-picker').value=shape;
-$('shape-picker').disabled=panMode||!layer||layer==='engine'||layer==='extender'||!!componentDefinition(layer,state);
+$('shape-picker').disabled=panMode||!paintableLayer();
 if(panMode){$('add').disabled=$('erase').disabled=true;document.querySelectorAll('[data-shape]').forEach(b=>b.disabled=true);}
 if(!layer){
   $('mode-label').textContent=name?`${name} selected`:'Select / move';
@@ -191,7 +192,7 @@ canvas.style.cursor=drag?.pan||drag?.move||touchNavigation?'grabbing':panMode?'g
 const placed=!layer&&selection?.kind==='component'?itemPosition(state,selection):null;
 const selected=componentDefinition(layer,state),rotating=placed|| (selected?{type:layer,rotation}:null);
 const canRotate=rotating&&componentDefinition(rotating.type,state)?.rotate;
-$('rotation-controls').hidden=panMode||(!selected&&!canRotate);
+$('rotation-controls').hidden=panMode||!!selected?.paintable||(!selected&&!canRotate);
 $('rotate').disabled=$('rotate-left').disabled=!canRotate||!!drag||touchNavigation;
 $('rotation-label').textContent=rotating?componentRotationLabel(rotating,state):'Fixed';
 if(placed&&canRotate){
@@ -203,11 +204,12 @@ if(placed&&canRotate){
 }
 if(selected){
   const b=componentBounds({type:layer,x:0,y:0,rotation},state);
-  $('shape-label').textContent=`${b.width} × ${b.height} · ${componentRotationLabel({type:layer,rotation},state)}`;
+  if(!selected.paintable)$('shape-label').textContent=`${b.width} × ${b.height} · ${componentRotationLabel({type:layer,rotation},state)}`;
   $('component-wiki').href=selected.source||`https://rimworldwiki.com/wiki/${selected.wiki}`;
   $('component-wiki').textContent=selected.source?'Mod definition ↗':'Wiki reference ↗';
   $('tool-hint').textContent=erase?'Click any tile of this component to remove it. Substructure stays in place.':`Click to place one component; the pointer anchors its top-left tile. ${selected.rotate?'Q / E or the buttons rotate before placing. ':''}${componentInfo(selected)} All footprint tiles need substructure.`;
 }
+if(selected?.paintable)$('tool-hint').textContent=erase?'Drag to erase the selected pipe type using the drawing tools.':'Click or drag to paint pipes, or draw a line, rectangle, or circle. Astrofuel pipes and hidden astrofuel pipes connect north, east, south, and west. Existing fuel-network tiles are preserved.';
 if(layer&&!panMode)$('tool-hint').textContent+=' Outside-field and missing-substructure placements are allowed and marked red.';
 if(panMode){$('mode-label').textContent='Pan view';$('shape-label').textContent='Drag to pan · Pinch to zoom';$('tool-hint').textContent='Drag to pan without changing your design. Use two fingers to pan and pinch to zoom in any tool. Choose Pan again to return to editing.';}
 }
@@ -268,7 +270,7 @@ function connectedSprite(k,set,type){
     ctx.drawImage(im,(sx+qx/2)*w,(sy+qy/2)*h,w/2,h/2,p.x+qx*zoom/2,p.y+qy*zoom/2,zoom/2+.3,zoom/2+.3);
   }
 }
-function drawComponent(c,alpha=1){
+function drawComponent(c,alpha=1,previewNetwork=null){
   if(c.type==='oxygen-pump'){
     const mount=pumpMount(c),p=screen(mount.x,mount.y);
     ctx.save();ctx.globalAlpha=alpha;ctx.translate(p.x,p.y);ctx.rotate(mount.rotation*Math.PI/2);
@@ -281,22 +283,31 @@ function drawComponent(c,alpha=1){
   loadImage(sprite.file);if(def.topSprite)loadImage(def.topSprite);
   if(def.topSprites)loadImage(directionalSprite(def.topSprites,b.rotation).file);
   const im=assets[sprite.file];
-  const p=screen(b.x+b.width/2,b.y+b.height/2);ctx.save();ctx.globalAlpha=alpha;ctx.translate(p.x,p.y);ctx.rotate(sprite.turn*Math.PI/2);if(sprite.flip)ctx.scale(-1,1);
+  const p=screen(b.x+b.width/2,b.y+b.height/2);ctx.save();ctx.globalAlpha=alpha*(def.spriteAlpha??1);ctx.translate(p.x,p.y);ctx.rotate(sprite.turn*Math.PI/2);if(sprite.flip)ctx.scale(-1,1);
   const size=def.drawSize,drawWidth=size?size[b.rotation%2?1:0]:b.width,drawHeight=size?size[b.rotation%2?0:1]:b.height;
   const w=(sprite.turn%2?drawHeight:drawWidth)*zoom,h=(sprite.turn%2?drawWidth:drawHeight)*zoom;
-  if(im){const visual=c.type==='vac-barrier'&&normalizeMods(state.mods).chapter1?null:componentVisual(c);if(visual){ctx.drawImage(im,...visual.source,(visual.x-.5)*zoom,(visual.y-.5)*zoom,visual.width*zoom,visual.height*zoom);}else if(def.atlas){drawNetworkSprite(c,im,w,h);}else{const scale=Math.min(w/im.width,h/im.height);ctx.drawImage(im,-im.width*scale/2,-im.height*scale/2,im.width*scale,im.height*scale);}}
+  if(im){const visual=c.type==='vac-barrier'&&normalizeMods(state.mods).chapter1?null:componentVisual(c);if(visual){ctx.drawImage(im,...visual.source,(visual.x-.5)*zoom,(visual.y-.5)*zoom,visual.width*zoom,visual.height*zoom);}else if(def.atlas){drawNetworkSprite(c,im,w,h,previewNetwork);}else{const scale=Math.min(w/im.width,h/im.height);ctx.drawImage(im,-im.width*scale/2,-im.height*scale/2,im.width*scale,im.height*scale);}}
   else{ctx.fillStyle=def.color;ctx.fillRect(-w/2+2,-h/2+2,w-4,h-4);ctx.fillStyle='#172627';ctx.font=`${Math.max(9,zoom*.4)}px sans-serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(def.symbol,0,0);}
   if(def.topSprite&&assets[def.topSprite]){const size=(def.topDrawSize||Math.max(b.width,b.height))*zoom;ctx.drawImage(assets[def.topSprite],-size/2,-size/2,size,size);}
   if(def.topSprites){const top=directionalSprite(def.topSprites,b.rotation),image=assets[top.file];if(image){ctx.save();ctx.rotate((top.turn-sprite.turn)*Math.PI/2);if(top.flip!==sprite.flip)ctx.scale(-1,1);ctx.drawImage(image,-w/2,-h/2,w,h);ctx.restore();}}
   ctx.restore();
 }
-function drawNetworkSprite(c,im,w,h){
+let networkLayoutState=null,networkLayout=new Map();
+function networkTiles(network){
+  if(networkLayoutState!==state){
+    networkLayout=new Map();
+    for(const c of state.components||[]){const net=componentDefinition(c.type).network;if(!net)continue;if(!networkLayout.has(net))networkLayout.set(net,new Set());for(const k of componentCells(c))networkLayout.get(net).add(k);}
+    networkLayoutState=state;
+  }
+  return networkLayout.get(network);
+}
+function drawNetworkSprite(c,im,w,h,previewNetwork=null){
   const def=componentDefinition(c.type),network=def.network;
   // Linked graphics use a 4x4 atlas indexed by N/E/S/W neighbors.
   let mask=0;
   for(const [dx,dy,bit] of [[0,-1,1],[1,0,2],[0,1,4],[-1,0,8]]){
     const tile=key(c.x+dx,c.y+dy);
-    if(network&&(state.components||[]).some(n=>componentDefinition(n.type).network===network&&n.x===c.x+dx&&n.y===c.y+dy)||def.hullLike&&(state.hull.includes(tile)||(state.components||[]).some(n=>componentDefinition(n.type).hullLike&&componentCells(n).includes(tile))))mask|=bit;
+    if(network&&(networkTiles(network)?.has(tile)||previewNetwork?.has(tile))||def.hullLike&&(state.hull.includes(tile)||(state.components||[]).some(n=>componentDefinition(n.type).hullLike&&componentCells(n).includes(tile))))mask|=bit;
   }
   const tw=im.width/4,th=im.height/4;ctx.drawImage(im,(mask%4)*tw,(3-Math.floor(mask/4))*th,tw,th,-w/2,-h/2,w,h);
 }
@@ -338,17 +349,18 @@ if($('issues').checked)for(const k of validation.unsupportedTiles){
   ctx.strokeStyle='#ff7d7d';ctx.lineWidth=1.5;ctx.strokeRect(p.x+.75,p.y+.75,zoom-1.5,zoom-1.5);
 }
 if(layer&&hover&&!panMode&&!touchNavigation&&!drag?.pan){
-  const def=componentDefinition(layer),remove=drag?drag.erase:erase;
+  const def=componentDefinition(layer),brush=!!def?.paintable,remove=drag?drag.erase:erase;
   const candidate=def?{type:layer,x:hover.x,y:hover.y,rotation}:null;
   const points=drag?shapeCells(shape,drag.start,hover):[key(hover.x,hover.y)];
   const hit=def&&remove?(state.components||[]).find(c=>c.type===layer&&componentCells(c).includes(key(hover.x,hover.y))):null;
-  const actual=def?(remove?(hit?componentCells(hit):points):componentCells(candidate)):layer==='engine'&&!remove?engineFootprint(state,hover):points;
-  const measurement=drag&&!drag.move&&shape!=='single'&&!def?{count:actual.length,minX:Infinity,minY:Infinity,maxX:-Infinity,maxY:-Infinity}:null;
+  const actual=def&&!brush?(remove?(hit?componentCells(hit):points):componentCells(candidate)):layer==='engine'&&!remove?engineFootprint(state,hover):points;
+  const measurement=drag&&!drag.move&&shape!=='single'&&(!def||brush)?{count:actual.length,minX:Infinity,minY:Infinity,maxX:-Infinity,maxY:-Infinity}:null;
   const placement=remove?{rejected:0}:checkPlacement(state,layer,key(hover.x,hover.y),rotation);
   const valid=!placement.rejected&&!placement.outside&&!placement.missingSupport;
-  if(def&&!remove){if($('exhaust').checked)for(const k of exhaustCells(candidate,state))tileRect(k,'#dfb47e45');drawComponent(candidate,.6);}
+  if(brush&&!remove){const preview=new Set(actual),existing=networkTiles(def.network);for(const k of actual){if(existing?.has(k))continue;const [x,y]=point(k);drawComponent({type:layer,x,y,rotation},.6,preview);}}
+  if(def&&!brush&&!remove){if($('exhaust').checked)for(const k of exhaustCells(candidate,state))tileRect(k,'#dfb47e45');drawComponent(candidate,.6);}
   if(layer==='engine'&&!remove)drawEngine(hover,.6);
-  for(const k of actual){const supported=!placement.rejected&&(def||layer==='extender'?valid:layer==='engine'?!placement.missingSupport:supportedField.has(k)&&(layer!=='hull'||floorTiles.has(k)));tileRect(k,remove?'#e7907c55':supported?'#c4dbac50':'#dd766551');const [x,y]=point(k),p=screen(x,y);ctx.strokeStyle=remove||!supported?'#ff7d7d':'#cedfbc';ctx.lineWidth=1;ctx.strokeRect(p.x+.5,p.y+.5,zoom-1,zoom-1);if(measurement){measurement.minX=Math.min(measurement.minX,x);measurement.minY=Math.min(measurement.minY,y);measurement.maxX=Math.max(measurement.maxX,x);measurement.maxY=Math.max(measurement.maxY,y);}}
+  for(const k of actual){const supported=!placement.rejected&&(def&&!brush||layer==='extender'?valid:layer==='engine'?!placement.missingSupport:supportedField.has(k)&&(!(layer==='hull'||brush)||floorTiles.has(k)));tileRect(k,remove?'#e7907c55':supported?'#c4dbac50':'#dd766551');const [x,y]=point(k),p=screen(x,y);ctx.strokeStyle=remove||!supported?'#ff7d7d':'#cedfbc';ctx.lineWidth=1;ctx.strokeRect(p.x+.5,p.y+.5,zoom-1,zoom-1);if(measurement){measurement.minX=Math.min(measurement.minX,x);measurement.minY=Math.min(measurement.minY,y);measurement.maxX=Math.max(measurement.maxX,x);measurement.maxY=Math.max(measurement.maxY,y);}}
   if((shape==='circle'||shape==='disc')&&drag){const c=screen(drag.start.x+.5,drag.start.y+.5);ctx.fillStyle='#e2ebd4';ctx.fillRect(c.x-2,c.y-2,4,4);}
   if(measurement)drawShapeMeasurements(ctx,measurement,screen,zoom,{width,height});
 }
@@ -373,7 +385,7 @@ if(!layer){
   for(const k of highlighted){const [x,y]=point(k),p=screen(x,y);ctx.strokeRect(p.x+1,p.y+1,zoom-2,zoom-2);}ctx.restore();
 }
 // Draw last so the original placement limit stays visible over floor, hull and extended fields.
-const highlightEngine=!!state.engine&&(layer==='extender'||componentDefinition(layer)?.fieldRadius)&&!erase&&!drag?.erase;
+const highlightEngine=!!state.engine&&(layer==='engine'||!layer&&selection?.kind==='engine'||layer==='extender'||componentDefinition(layer)?.fieldRadius)&&!erase&&!drag?.erase;
 $('engine-boundary-legend').hidden=!highlightEngine;
 if(highlightEngine){
   const originalField=engineField;
@@ -462,7 +474,7 @@ canvas.onpointermove=e=>{
   if(touchNavigation){navigateTouch();return;}
   if(drag&&e.pointerId!==drag.pointerId)return;
   if(drag?.pan){offset={x:drag.offset.x+e.clientX-drag.x,y:drag.offset.y+e.clientY-drag.y};hover=tile(e);render();return;}
-  if(drag&&!drag.move&&shape==='single'&&(!componentDefinition(layer)||drag.erase)){
+  if(drag&&!drag.move&&shape==='single'&&(paintableLayer()||drag.erase)){
     if(continueStroke(e))render();return;
   }
   const next=tile(e);if(hover&&next.x===hover.x&&next.y===hover.y)return;
@@ -482,7 +494,7 @@ function finish(e,cancel=false){
     selection=result.item;commit(result.state);refresh();return;
   }
   const d=drag;
-  if(e&&!cancel){hover=tile(e);if(shape==='single'&&(!componentDefinition(layer)||d.erase))continueStroke(e);}
+  if(e&&!cancel){hover=tile(e);if(shape==='single'&&(paintableLayer()||d.erase))continueStroke(e);}
   if(cancel)state=d.before;
   else if(shape!=='single')applyCells(shapeCells(shape,d.start,hover||d.start),d.erase);
   drag=null;

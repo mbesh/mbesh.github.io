@@ -136,6 +136,8 @@ export function checkPlacement(s,layer,k,rotation=0,{ignore=null,tiles=null}={})
   if(def){
     if(!componentEnabled(s,def))return fail('Enable this component’s mod chapter first.');
     const c={type:layer,x,y,rotation:normalizeRotation(layer,rotation,s)},foot=componentCells(c);
+    const existingPipe=def.paintable&&components.some(c=>componentDefinition(c.type).network===def.network&&componentCells(c).some(k=>foot.includes(k)));
+    if(components.length>=2000&&!existingPipe)return fail('A design can contain at most 2,000 components.');
     if(foot.some(k=>{const [x,y]=point(k);return Math.abs(x)>110||Math.abs(y)>110;}))return fail('Keep the full component within the planning grid.');
     missingSupport=foot.some(k=>!s.floor.includes(k));
     if(def.wallMounted&&!hasHull(k))return fail('Oxygen pumps must be mounted on a hull tile.');
@@ -147,7 +149,7 @@ export function checkPlacement(s,layer,k,rotation=0,{ignore=null,tiles=null}={})
     const anchor=normalizeMods(s.mods).chapter1?componentAnchor(c):componentCenter(c);
     const supported=def.fieldRadius?inField(supportState,anchor):foot.every(k=>{const [x,y]=point(k);return inField(supportState,{x,y});});
     outside=!supported||!!(def.engineField&&!inEngineField(engine,anchor,s));
-    if(def.network){if(components.some(c=>componentDefinition(c.type).network===def.network&&componentCells(c).some(k=>foot.includes(k))))return fail('This tile already has a pipe in this network.');}
+    if(def.network){if((!def.paintable||ignore)&&components.some(c=>componentDefinition(c.type).network===def.network&&componentCells(c).some(k=>foot.includes(k))))return fail('This tile already has a pipe in this network.');}
     else if(foot.some(k=>occupied(k,def.wallMounted||def.replacesHull||layer==='autodoor')))return fail('The component footprint overlaps another structure.');
   }else if(layer==='engine'){
     if(engine)return fail('Only one grav engine is allowed. Erase it to reposition.');
@@ -188,6 +190,7 @@ export function apply(s,layer,cells,erase=false,rotation=0){
     if(tiles?.has(k))continue;
     const result=checkPlacement(next,layer,k,rotation,{tiles});
     if(result.rejected){rejected++;message=result.message;continue;}
+    if(def?.paintable&&next.components.some(c=>componentDefinition(c.type).network===def.network&&componentCells(c).includes(k)))continue;
     const [x,y]=point(k);
     if(def){
       const c={type:layer,x,y,rotation:normalizeRotation(layer,rotation,next)};

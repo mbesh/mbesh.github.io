@@ -3,6 +3,13 @@
 // New component anchors are the top-left tile of their rotated footprint.
 import {MOD_COMPONENTS} from './mod-data.js';
 import {modOverride,componentEnabled} from './mods.js';
+const astrofuelSprites=MOD_COMPONENTS.find(c=>c.id==='VGE_AstrofuelPipe').sprites;
+// Planner-only presentation: show hidden pipe runs using the shared linked art.
+function plannerComponent(c){
+  if(c.id==='VGE_AstrofuelPipe')return {...c,paintable:true};
+  if(c.id==='VGE_HiddenAstrofuelPipe')return {...c,paintable:true,atlas:true,sprites:astrofuelSprites,spriteAlpha:.55};
+  return c;
+}
 export const COMPONENTS = [
   {id:'autodoor',name:'Autodoor',width:1,height:1,rotate:true,rotationCount:2,group:'Structure',symbol:'AD',color:'#aeb8b4',wiki:'Autodoor',note:'Powered door. Choose north/south or east/west; needs substructure.'},
   {id:'small-tank',name:'Small chemfuel tank',width:2,height:2,rotate:true,group:'Flight',symbol:'250',color:'#bea879',wiki:'Small_chemfuel_tank',note:'Stores 250 chemfuel.'},
@@ -20,7 +27,7 @@ export const COMPONENTS = [
   {id:'heater',name:'Heater',width:1,height:1,group:'Life support',symbol:'H',color:'#d5a08d',wiki:'Heater',note:'Warms enclosed rooms.'},
   // Core SolarGenerator definition: 4 × 4 and rotatable=false.
   {id:'solar-generator',name:'Solar generator',width:4,height:4,group:'Power',symbol:'SOL',color:'#82a6bd',wiki:'Solar_generator',note:'Produces up to 1,700 W in sunlight; roofs reduce output.'},
-  ...MOD_COMPONENTS,
+  ...MOD_COMPONENTS.map(plannerComponent),
 ];
 // South-facing console art uses the 3-wide by 2-deep orientation of its 2 × 3 footprint.
 const directional=prefix=>({south:`${prefix}_south.png`,north:`${prefix}_north.png`,east:`${prefix}_east.png`});
