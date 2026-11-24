@@ -19,6 +19,7 @@
 
 /* Build controls float above the canvas; their empty surroundings remain drawable. */
 main{grid-template-columns:minmax(0,1fr) 270px}
+.workspace,#board{min-height:0}
 #board{--tool-clearance:220px}
 .floating-palette,.floating-tools{position:absolute;z-index:3;background:#232c30f5;border:1px solid #52645d;border-radius:7px;box-shadow:0 8px 24px #0b151952}
 .floating-palette{top:16px;left:16px;width:280px;max-height:calc(100% - var(--tool-clearance));overflow:auto;scrollbar-width:thin;scrollbar-color:#63766b #233031;overscroll-behavior:contain}
@@ -66,6 +67,10 @@ main{grid-template-columns:minmax(0,1fr) 270px}
 .selection-info[hidden],.remove-selected[hidden]{display:none}
 .remove-selected{min-height:44px;padding:6px 10px;font-size:12px;color:#f0b6a6;border-color:#9a6e62}
 .remove-selected:hover{background:#523c36}
+.component-rotation-handles{position:absolute;inset:0;z-index:2;pointer-events:none}
+.component-rotation-handles[hidden]{display:none}
+.component-rotation-handles button{position:absolute;width:44px;height:44px;padding:0;pointer-events:auto;touch-action:manipulation;border-color:#b6c8a5;background:#2e4039;color:#e1eccf;font-size:27px;box-shadow:0 3px 12px #0006}
+.component-rotation-handles button:hover{background:#43594c}
 .floating-tools.selection-mode>h2,.floating-tools.selection-mode .shapes,.floating-tools.selection-mode .mobile-shape,.floating-tools.selection-mode .segmented{display:none}
 .floating-tools .segmented button{flex:none;width:auto;white-space:nowrap;padding:6px 12px;font-size:12px;min-height:33px}
 .floating-tools .shapes{grid-column:1/-1;grid-row:2;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
@@ -74,7 +79,7 @@ main{grid-template-columns:minmax(0,1fr) 270px}
 .floating-tools #rotation-controls{grid-column:1/-1;margin:0;display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:8px}
 .floating-tools #rotation-controls[hidden]{display:none}
 .floating-tools .rotation-buttons{flex:0 1 280px;min-width:210px}
-.floating-tools .rotation-buttons button{padding:6px 11px;min-height:34px}
+.floating-tools .rotation-buttons button{padding:6px 8px;min-height:44px;font-size:12px;white-space:nowrap}
 .floating-tools #component-wiki{margin:0;font-size:11px}
 .board-legend{top:18px;right:18px;bottom:auto;left:auto;justify-content:flex-end;max-width:calc(100% - 330px);padding:6px 8px;background:#19262bd9;border-radius:4px;font-size:11px;z-index:2}
 .zoom{z-index:2}
@@ -189,7 +194,7 @@ select:focus-visible{outline:2px solid #9cddce;outline-offset:3px}
   .canvas-top{min-height:48px;padding-top:2px;padding-bottom:2px}
   .floating-tools .mobile-shape{flex:1;max-width:160px}
   .floating-tools .tool-actions{flex:0 0 auto;order:0}
-  .floating-tools.selection-mode .selection-info{flex:1}
+  .floating-tools.selection-mode .selection-info{display:none}
   .floating-tools #rotation-controls{flex:1;min-width:200px;flex-basis:200px;border-top:0;padding-top:0}
   .floating-tools #component-wiki{display:none}
   .board-legend{display:none}

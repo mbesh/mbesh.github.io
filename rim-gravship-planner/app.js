@@ -6,7 +6,7 @@ import {shipSystems} from './systems.js';
 import {renderSystems} from './systems-ui.js';
 import {COMPONENTS,availableComponents,componentInfo,componentDefinition,componentBounds,componentCells,componentSprite,directionalSprite,componentVisual,barrierJoins,pumpMount,exhaustCells,ROTATIONS,normalizeRotation,componentRotationLabel} from './components.js';
 import {normalizeMods,componentEnabled,engineProfile,engineOptions,extenderProfile} from './mods.js';
-import {blank,key,point,footprint,engineFootprint,capacity,capacityDetails,validate,shapeCells,apply,sanitize,inField,inEngineField,fieldCells,fieldSources,hitItem,itemPosition,itemCells,moveItem,checkPlacement,previewMove} from './model.js';
+import {blank,key,point,footprint,engineFootprint,capacity,capacityDetails,validate,shapeCells,apply,sanitize,inField,inEngineField,fieldCells,fieldSources,hitItem,itemPosition,itemCells,moveItem,checkPlacement,previewMove,rotateItem} from './model.js';
 const $=id=>document.getElementById(id),canvas=$('canvas'),ctx=canvas.getContext('2d');
 const paletteMedia=window.matchMedia?.('(max-width:1100px)');
 function collapsePaletteOnNarrowScreen(){if(paletteMedia?.matches)$('palette-panel').open=false;}
@@ -145,8 +145,18 @@ $('engine-type').onchange=()=>{
   if(state.engine){const result=checkPlacement(next,'engine',key(state.engine.x,state.engine.y),0,{ignore:{kind:'engine'}});if(result.rejected){toast(result.message);modControlsSignature=null;refresh();return;}}
   commit(next);chooseLayer('engine');
 };
-function rotateSelected(delta){if(!componentDefinition(layer,state)?.rotate||drag)return;rotation=normalizeRotation(layer,rotation+delta,state);refresh();}
+function rotateSelected(delta){
+  if(drag||panMode||touchNavigation)return;
+  if(!layer){
+    const result=rotateItem(state,selection,delta);
+    if(result.rejected){toast(result.message);return;}
+    selection=result.item;hover=null;commit(result.state);return;
+  }
+  if(!componentDefinition(layer,state)?.rotate)return;
+  rotation=normalizeRotation(layer,rotation+delta,state);refresh();
+}
 $('rotate').onclick=()=>rotateSelected(1);$('rotate-left').onclick=()=>rotateSelected(-1);
+$('component-rotate-left').onclick=()=>rotateSelected(-1);$('component-rotate-right').onclick=()=>rotateSelected(1);
 for(const [id,icon,label] of shapes){const b=document.createElement('button');b.dataset.shape=id;b.title=label;b.setAttribute('aria-label',label);b.innerHTML=`<span aria-hidden="true">${icon}</span>${label}`;b.onclick=()=>{shape=id;collapsePaletteOnNarrowScreen();refresh();};$('shapes').append(b);const option=document.createElement('option');option.value=id;option.textContent=label;$('shape-picker').append(option);}
 $('shape-picker').onchange=()=>{if(drag)finish(null,true);shape=$('shape-picker').value;refresh();};
 $('add').onclick=()=>{erase=false;refresh();};$('erase').onclick=()=>{erase=true;refresh();};
@@ -177,10 +187,19 @@ if(!layer){
   $('tool-hint').textContent='Select an item on the grid, then drag it to move or choose Remove selected. Delete / Backspace also removes the selection. Moves and removals can be undone.';
 }
 canvas.style.cursor=drag?.pan||drag?.move||touchNavigation?'grabbing':panMode?'grab':layer?'crosshair':selection?'grab':'default';
-const selected=componentDefinition(layer,state);
-$('rotation-controls').hidden=!selected||panMode;
-$('rotate').disabled=$('rotate-left').disabled=!selected?.rotate;
-$('rotation-label').textContent=selected?componentRotationLabel({type:layer,rotation},state):'Fixed';
+const placed=!layer&&selection?.kind==='component'?itemPosition(state,selection):null;
+const selected=componentDefinition(layer,state),rotating=placed|| (selected?{type:layer,rotation}:null);
+const canRotate=rotating&&componentDefinition(rotating.type,state)?.rotate;
+$('rotation-controls').hidden=panMode||(!selected&&!canRotate);
+$('rotate').disabled=$('rotate-left').disabled=!canRotate||!!drag||touchNavigation;
+$('rotation-label').textContent=rotating?componentRotationLabel(rotating,state):'Fixed';
+if(placed&&canRotate){
+  const def=componentDefinition(placed.type,state),b=componentBounds(placed,state);
+  $('shape-label').textContent=`${b.width} × ${b.height} · ${componentRotationLabel(placed,state)}`;
+  $('tool-hint').textContent='Drag the selection to move it. Tap the arrows beside it or use the toolbar to rotate; Q / E works too. Rotations can be undone.';
+  $('component-wiki').href=def.source||`https://rimworldwiki.com/wiki/${def.wiki}`;
+  $('component-wiki').textContent=def.source?'Mod definition ↗':'Wiki reference ↗';
+}
 if(selected){
   const b=componentBounds({type:layer,x:0,y:0,rotation},state);
   $('shape-label').textContent=`${b.width} × ${b.height} · ${componentRotationLabel({type:layer,rotation},state)}`;
@@ -355,7 +374,31 @@ if(highlightEngine){
   ctx.strokeStyle='#142326';ctx.lineWidth=6;ctx.stroke();
   ctx.strokeStyle='#f1cc7b';ctx.lineWidth=2.5;ctx.stroke();ctx.restore();
 }
-$('zoom-level').textContent=`${Math.round(zoom/22*100)}%`;}
+$('zoom-level').textContent=`${Math.round(zoom/22*100)}%`;positionRotationHandles();}
+function positionRotationHandles(){
+  const controls=$('component-rotation-handles');
+  const component=!layer&&selection?.kind==='component'?itemPosition(state,selection):null;
+  controls.hidden=!component||!componentDefinition(component.type,state)?.rotate||panMode||!!drag||touchNavigation;
+  if(controls.hidden)return;
+  const b=componentBounds(component,state),p=screen(b.x,b.y);
+  if(p.x+b.width*zoom<0||p.x>width||p.y+b.height*zoom<0||p.y>height){controls.hidden=true;return;}
+  const board=canvas.getBoundingClientRect(),toolbar=$('drawing-toolbar').getBoundingClientRect();
+  const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+  const maxY=Math.min(height-48,toolbar.top-board.top-48);
+  if(maxY<4||width<104){controls.hidden=true;return;}
+  let left=clamp(p.x-52,4,width-48),right=clamp(p.x+b.width*zoom+8,4,width-48);
+  if(right-left<52){right=clamp(left+52,56,width-48);left=right-52;}
+  const desiredY=clamp(p.y+(b.height*zoom-44)/2,4,maxY);
+  const obstacles=[$('palette-panel'),$('zoom-controls')].map(e=>{const r=e.getBoundingClientRect();return {x:r.left-board.left,y:r.top-board.top,right:r.left-board.left+r.width,bottom:r.top-board.top+r.height};});
+  const clear=y=>obstacles.every(r=>[left,right].every(x=>x+44<=r.x||x>=r.right||y+44<=r.y||y>=r.bottom));
+  const candidates=[desiredY,...obstacles.map(r=>clamp(r.bottom+4,4,maxY)),4,maxY];
+  const y=candidates.find(clear);
+  // The toolbar remains available if there is no room beside the component.
+  if(y===undefined){controls.hidden=true;return;}
+  for(const [id,x] of [['component-rotate-left',left],['component-rotate-right',right]]){
+    $(id).style.left=`${x}px`;$(id).style.top=`${y}px`;
+  }
+}
 function tileAt(x,y){return {x:Math.floor((x-width/2-offset.x)/zoom),y:Math.floor((y-height/2-offset.y)/zoom)};}
 function resize(){const r=$('board').getBoundingClientRect();width=r.width;height=r.height;const dpr=window.devicePixelRatio||1;canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);render();}new ResizeObserver(resize).observe($('board'));
 function applyCells(cells,remove){const r=apply(state,layer,cells,remove,rotation);state=r.state;if(r.rejected)drag&&(drag.message=r.message);}
@@ -455,7 +498,7 @@ function zoomBy(f,at={x:width/2,y:height/2}){const next=Math.max(8,Math.min(58,z
 canvas.addEventListener('wheel',e=>{e.preventDefault();const r=canvas.getBoundingClientRect();zoomBy(Math.exp(-e.deltaY*.001),{x:e.clientX-r.left,y:e.clientY-r.top});},{passive:false});$('zoom-in').onclick=()=>zoomBy(1.25);$('zoom-out').onclick=()=>zoomBy(.8);
 function center(){const tiles=[...state.floor,...state.hull,...engineFootprint(state),...(state.scaffold||[]),...state.extenders.map(e=>key(e.x,e.y)),...(state.components||[]).flatMap(componentCells)];if(!tiles.length){offset={x:0,y:0};zoom=22;}else{const ps=tiles.map(point),xs=ps.map(p=>p[0]),ys=ps.map(p=>p[1]),a=Math.min(...xs),b=Math.max(...xs),c=Math.min(...ys),d=Math.max(...ys);zoom=Math.max(8,Math.min(32,(width-120)/(b-a+5),(height-120)/(d-c+5)));offset={x:-(a+b+1)/2*zoom,y:-(c+d+1)/2*zoom};}hover=null;render();}$('center').onclick=center;
 function history(back){const from=back?undo:redo,to=back?redo:undo;if(!from.length)return;if(drag)finish(null,true);selection=null;to.push(structuredClone(state));state=from.pop();changed();}$('undo').onclick=()=>history(true);$('redo').onclick=()=>history(false);
-window.addEventListener('keydown',e=>{if(e.target.matches('input,textarea,select')||document.querySelector('dialog[open]'))return;if(!e.ctrlKey&&!e.metaKey&&!e.altKey&&['Delete','Backspace'].includes(e.key)&&!layer&&!panMode&&selection){e.preventDefault();removeSelected();return;}if(!e.ctrlKey&&!e.metaKey&&!e.altKey&&['q','e'].includes(e.key.toLowerCase())){e.preventDefault();rotateSelected(e.key.toLowerCase()==='q'?-1:1);}if(e.code==='Space'){space=true;e.preventDefault();}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();history(!e.shiftKey);}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();requestSave();}if(e.key==='Escape'){chooseLayer(null);hover=null;render();}});window.addEventListener('keyup',e=>{if(e.code==='Space')space=false;});window.addEventListener('blur',()=>{space=false;finish(null,true);touchPointers.clear();gesture=null;touchNavigation=false;});
+window.addEventListener('keydown',e=>{if(e.target.matches('input,textarea,select')||document.querySelector('dialog[open]'))return;if(!e.ctrlKey&&!e.metaKey&&!e.altKey&&['Delete','Backspace'].includes(e.key)&&!layer&&!panMode&&selection){e.preventDefault();removeSelected();return;}if(!e.ctrlKey&&!e.metaKey&&!e.altKey&&['q','e'].includes(e.key.toLowerCase())){e.preventDefault();rotateSelected(e.key.toLowerCase()==='q'?-1:1);}if(e.code==='Space'&&!e.target.matches('button,summary,a')){space=true;e.preventDefault();}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();history(!e.shiftKey);}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();requestSave();}if(e.key==='Escape'){chooseLayer(null);hover=null;render();}});window.addEventListener('keyup',e=>{if(e.code==='Space')space=false;});window.addEventListener('blur',()=>{space=false;finish(null,true);touchPointers.clear();gesture=null;touchNavigation=false;});
 $('name').oninput=()=>{dirty=true;draft();statusDirty=true;render();};
 let confirmAction=null;function confirm(title,text,action){$('confirm-title').textContent=title;$('confirm-text').textContent=text;confirmAction=action;$('confirm-dialog').showModal();}$('cancel-confirm').onclick=()=>$('confirm-dialog').close();$('accept-confirm').onclick=()=>{$('confirm-dialog').close();confirmAction?.();};
 function save(){const library=[...readLibrary()],id=savedId||crypto.randomUUID(),name=$('name').value.trim()||'Untitled gravship';const item={id,name,updated:Date.now(),state:structuredClone(state)},i=library.findIndex(d=>d.id===id);if(i>=0)library[i]=item;else library.push(item);if(store(STORAGE,library)){savedId=id;dirty=false;$('name').value=name;draft();refresh();toast('Design saved in this browser.');return true;}return false;}

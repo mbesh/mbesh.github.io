@@ -270,3 +270,25 @@ export function moveItem(s,item,target){
   }
   return {...result,item:item.kind==='floor'||item.kind==='hull'||item.kind==='scaffold'?{...item,key:key(target.x,target.y)}:item};
 }
+export function rotateItem(s,item,delta){
+  const current=item?.kind==='component'?itemPosition(s,item):null;
+  const fail=message=>({state:s,item,rejected:1,message});
+  if(!current)return fail('Select an existing component to rotate.');
+  if(!componentDefinition(current.type,s)?.rotate)return fail('This component does not rotate.');
+  if(!Number.isInteger(delta))return fail('Choose a whole quarter turn.');
+  const rotation=normalizeRotation(current.type,normalizeRotation(current.type,current.rotation,s)+delta,s);
+  if(rotation===current.rotation)return {state:s,item,rejected:0,message:''};
+  const before=componentBounds(current,s),after=componentBounds({...current,rotation},s);
+  // Keep the central grid tile as a stable pivot, including even-sized footprints.
+  // Four turns (or two for an autodoor) return to the original position.
+  const x=current.x+Math.floor(before.width/2)-Math.floor(after.width/2);
+  const y=current.y+Math.floor(before.height/2)-Math.floor(after.height/2);
+  const candidate={...current,x,y,rotation};
+  if(componentCells(candidate).some(k=>{const [x,y]=point(k);return Math.abs(x)>110||Math.abs(y)>110;}))return fail('Rotate within the planning grid.');
+  const withoutCurrent={...s,components:s.components.filter((_,i)=>i!==item.index)};
+  const result=apply(withoutCurrent,current.type,[key(x,y)],false,rotation);
+  if(result.rejected)return fail(result.message);
+  const rotated=result.state.components.pop(),index=Math.min(item.index,result.state.components.length);
+  result.state.components.splice(index,0,{...current,...rotated});
+  return {...result,item:{...item,index}};
+}
