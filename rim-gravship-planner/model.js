@@ -68,13 +68,15 @@ export function fieldCells(s){
 function componentCenter(c){const b=componentBounds(c);return {x:b.x+(b.width-1)/2,y:b.y+(b.height-1)/2};}
 export function validate(s){
   const floor=new Set(s.floor),foundation=new Set([...s.floor,...s.scaffold||[]]),connected=new Set(),queue=[],components=s.components||[];
+  const sources=fieldSources(s),modded=normalizeMods(s.mods).chapter1;
+  const supported=(x,y)=>sources.some(a=>(a.x-x)**2+(a.y-y)**2<a.radius**2);
   if(s.engine)for(const k of engineFootprint(s))if(foundation.has(k)){connected.add(k);queue.push(k);}
   for(let i=0;i<queue.length;i++){
     const [x,y]=point(queue[i]);
     for(const n of [key(x-1,y),key(x+1,y),key(x,y-1),key(x,y+1)])if(foundation.has(n)&&!connected.has(n)){connected.add(n);queue.push(n);}
   }
   const disconnected=[...foundation].filter(k=>!connected.has(k));
-  const outside=[...foundation].filter(k=>{const [x,y]=point(k);return !inField(s,{x,y});});
+  const outside=[...foundation].filter(k=>{const [x,y]=point(k);return !supported(x,y);});
   const required=[...engineFootprint(s),...s.extenders.flatMap(e=>footprint(e)),...s.hull,...components.flatMap(componentCells)];
   const missing=[...new Set(required.filter(k=>!floor.has(k)))];
   const structures=new Set([...engineFootprint(s),...s.extenders.flatMap(e=>footprint(e)),...s.hull,...components.filter(c=>!componentDefinition(c.type).network).flatMap(componentCells)]);
@@ -82,10 +84,9 @@ export function validate(s){
   const hull=new Set([...s.hull,...components.filter(c=>componentDefinition(c.type).hullLike).flatMap(componentCells)]);
   const missingWall=components.filter(c=>componentDefinition(c.type).wallMounted&&!hull.has(key(c.x,c.y)));
   const blockedPumps=components.filter(c=>(c.type==='oxygen-pump'||c.type==='VGE_IndustrialOxygenPump')&&hull.has(key(pumpMount(c).facingTile.x,pumpMount(c).facingTile.y)));
-  const sources=fieldSources(s),modded=normalizeMods(s.mods).chapter1;
   const outsideComponents=components.filter(c=>{
     const d=componentDefinition(c.type,s),anchor=modded?componentAnchor(c):componentCenter(c);
-    return !componentEnabled(s,d)||componentCells(c).some(k=>{const [x,y]=point(k);return !inField(s,{x,y});})||d.engineField&&!inEngineField(s.engine,anchor,s);
+    return !componentEnabled(s,d)||componentCells(c).some(k=>{const [x,y]=point(k);return !supported(x,y);})||d.engineField&&!inEngineField(s.engine,anchor,s);
   });
   const overLimits=COMPONENTS.map(d=>componentDefinition(d.id,s)).filter(d=>componentEnabled(s,d)&&d.limit&&components.filter(c=>c.type===d.id).length>d.limit);
   if(s.extenders.length>extenderProfile(s).limit)overLimits.push({id:'extender',name:'Field extender',limit:extenderProfile(s).limit});
@@ -93,7 +94,10 @@ export function validate(s){
   const occupancy=new Map();
   for(const k of [...engineFootprint(s),...s.extenders.map(e=>key(e.x,e.y)),...s.hull,...components.filter(c=>{const d=componentDefinition(c.type);return !d.network&&!d.wallMounted;}).flatMap(componentCells)])occupancy.set(k,(occupancy.get(k)||0)+1);
   const overlappingStructures=[...occupancy].filter(([,n])=>n>1).map(([k])=>k);
-  return {disconnected,outside,missing,blockedExhaust,missingWall,blockedPumps,outsideComponents,overLimits,disabledComponents,overlappingStructures,disabledTerrain:!modded?(s.scaffold||[]):[],disabledEngine:!modded&&!!s.engine&&s.engineType&&s.engineType!=='standard',over:Math.max(0,s.floor.length-capacity(s)),invalidExtenders:s.extenders.filter(e=>!sources.some(a=>a.extender===e))};
+  const invalidExtenders=s.extenders.filter(e=>!sources.some(a=>a.extender===e));
+  const outsideTiles=[...new Set([...outside,...s.hull.filter(k=>{const [x,y]=point(k);return !supported(x,y);}),...invalidExtenders.map(e=>key(e.x,e.y)),...outsideComponents.flatMap(componentCells)])];
+  const unsupportedTiles=[...new Set([...outsideTiles,...missing])];
+  return {disconnected,outside,outsideTiles,unsupportedTiles,missing,blockedExhaust,missingWall,blockedPumps,outsideComponents,overLimits,disabledComponents,overlappingStructures,disabledTerrain:!modded?(s.scaffold||[]):[],disabledEngine:!modded&&!!s.engine&&s.engineType&&s.engineType!=='standard',over:Math.max(0,s.floor.length-capacity(s)),invalidExtenders};
 }
 
 function line(a,b){const out=[];let x=a.x,y=a.y;const dx=Math.abs(b.x-x),dy=-Math.abs(b.y-y),sx=x<b.x?1:-1,sy=y<b.y?1:-1;let err=dx+dy;while(true){out.push(key(x,y));if(x===b.x&&y===b.y)break;const e=2*err;if(e>=dy){err+=dy;x+=sx;}if(e<=dx){err+=dx;y+=sy;}}return out;}
@@ -120,6 +124,8 @@ const PLACEMENT_OK=Object.freeze({rejected:0,message:''});
 // item while checking a move, without cloning or constructing a temporary ship.
 export function checkPlacement(s,layer,k,rotation=0,{ignore=null,tiles=null}={}){
   const fail=message=>({rejected:1,message}),[x,y]=point(k),p={x,y};
+  if(!Number.isInteger(x)||!Number.isInteger(y)||Math.abs(x)>110||Math.abs(y)>110)return fail('Place within the planning grid (X and Y from -110 to 110).');
+  let outside=false,missingSupport=false;
   const engine=ignore?.kind==='engine'?null:s.engine;
   const extenders=ignore?.kind==='extender'?s.extenders.filter((_,i)=>i!==ignore.index):s.extenders;
   const components=ignore?.kind==='component'?(s.components||[]).filter((_,i)=>i!==ignore.index):s.components||[];
@@ -130,7 +136,8 @@ export function checkPlacement(s,layer,k,rotation=0,{ignore=null,tiles=null}={})
   if(def){
     if(!componentEnabled(s,def))return fail('Enable this component’s mod chapter first.');
     const c={type:layer,x,y,rotation:normalizeRotation(layer,rotation,s)},foot=componentCells(c);
-    if(foot.some(k=>s.scaffold?.includes(k)))return fail('Subscaffold cannot support buildings. Replace it with substructure.');
+    if(foot.some(k=>{const [x,y]=point(k);return Math.abs(x)>110||Math.abs(y)>110;}))return fail('Keep the full component within the planning grid.');
+    missingSupport=foot.some(k=>!s.floor.includes(k));
     if(def.wallMounted&&!hasHull(k))return fail('Oxygen pumps must be mounted on a hull tile.');
     if(layer==='oxygen-pump'||layer==='VGE_IndustrialOxygenPump'){
       const front=pumpMount(c).facingTile;
@@ -139,30 +146,31 @@ export function checkPlacement(s,layer,k,rotation=0,{ignore=null,tiles=null}={})
     if(def.limit&&components.filter(c=>c.type===layer).length>=def.limit)return fail(`A maximum of ${def.limit} ${def.name.toLowerCase()} components is allowed.`);
     const anchor=normalizeMods(s.mods).chapter1?componentAnchor(c):componentCenter(c);
     const supported=def.fieldRadius?inField(supportState,anchor):foot.every(k=>{const [x,y]=point(k);return inField(supportState,{x,y});});
-    if(!supported||def.engineField&&!inEngineField(engine,anchor,s))return fail(def.engineField?'Place this component inside the original engine field.':'The entire component must be inside a supported grav field.');
+    outside=!supported||!!(def.engineField&&!inEngineField(engine,anchor,s));
     if(def.network){if(components.some(c=>componentDefinition(c.type).network===def.network&&componentCells(c).some(k=>foot.includes(k))))return fail('This tile already has a pipe in this network.');}
     else if(foot.some(k=>occupied(k,def.wallMounted||def.replacesHull||layer==='autodoor')))return fail('The component footprint overlaps another structure.');
   }else if(layer==='engine'){
     if(engine)return fail('Only one grav engine is allowed. Erase it to reposition.');
-    if(engineFootprint(s,p).some(k=>occupied(k)||s.scaffold?.includes(k)))return fail(`The engine needs a clear ${engineProfile(s).width} × ${engineProfile(s).height} footprint.`);
+    if(engineFootprint(s,p).some(k=>{const [x,y]=point(k);return Math.abs(x)>110||Math.abs(y)>110;}))return fail('Keep the full engine within the planning grid.');
+    if(engineFootprint(s,p).some(k=>occupied(k)))return fail(`The engine needs a clear ${engineProfile(s).width} × ${engineProfile(s).height} footprint.`);
+    missingSupport=engineFootprint(s,p).some(k=>!s.floor.includes(k));
   }else if(layer==='extender'){
-    if(s.scaffold?.includes(k))return fail('Subscaffold cannot support buildings. Replace it with substructure.');
-    if(!inEngineField(engine,p,s)&&!(normalizeMods(s.mods).chapter1&&fieldSources(s).some(a=>a.kind==='VGE_GravFieldAmplifier'&&inRadius(a,p,a.radius))))return fail('Place extenders inside the engine field or an active amplifier field.');
+    missingSupport=!s.floor.includes(k);
+    outside=!inEngineField(engine,p,s)&&!(normalizeMods(s.mods).chapter1&&fieldSources(s).some(a=>a.kind==='VGE_GravFieldAmplifier'&&inRadius(a,p,a.radius)));
     if(extenders.length>=extenderProfile(s).limit)return fail(`A maximum of ${extenderProfile(s).limit} extenders is allowed.`);
     if(occupied(k))return fail('This tile is occupied by a structure.');
   }else{
     const existing=tiles?tiles.has(k):!(ignore?.kind===layer&&ignore.key===k)&&(s[layer]||[]).includes(k);
     if(existing)return PLACEMENT_OK;
-    if(!inField(s,p))return fail('Tiles must be inside a supported grav field.');
+    outside=!inField(s,p);
     if(layer==='scaffold'&&!normalizeMods(s.mods).chapter1)return fail('Enable Chapter 1 to place subscaffold.');
-    if(layer==='scaffold'&&occupied(k))return fail('Subscaffold cannot support buildings.');
+    if(layer==='hull')missingSupport=!s.floor.includes(k);
     const count=tiles?tiles.size:s.floor.length-(ignore?.kind==='floor'?1:0);
     if(layer==='floor'&&count>=capacity(s))return fail('Substructure capacity reached. Add a field extender.');
     if(layer==='hull'&&components.some(c=>c.type==='oxygen-pump'&&key(pumpMount(c).facingTile.x,pumpMount(c).facingTile.y)===k))return fail('This tile must stay clear of hull for the oxygen pump facing it.');
-    if(layer==='hull'&&s.scaffold?.includes(k))return fail('Replace subscaffold with substructure before adding hull.');
     if(layer==='hull'&&(engine&&engineFootprint(s,engine).includes(k)||extenders.some(e=>key(e.x,e.y)===k)||components.some(c=>c.type!=='autodoor'&&!componentDefinition(c.type).replacesHull&&!componentDefinition(c.type).wallMounted&&!componentDefinition(c.type).network&&componentCells(c).includes(k))))return fail('This tile is occupied by a structure.');
   }
-  return PLACEMENT_OK;
+  return outside||missingSupport?{...PLACEMENT_OK,...(outside?{outside:true}:{}),...(missingSupport?{missingSupport:true}:{})}:PLACEMENT_OK;
 }
 export function apply(s,layer,cells,erase=false,rotation=0){
   const next=structuredClone(s);next.components??=[];
@@ -244,12 +252,18 @@ export function previewMove(s,item,target){
   if(!Number.isInteger(target.x)||!Number.isInteger(target.y)||Math.abs(target.x)>110||Math.abs(target.y)>110)return fail('Move within the planning grid.');
   const position={...p,x:target.x,y:target.y};
   const cells=item.kind==='component'?componentCells(position):item.kind==='engine'?engineFootprint(s,position):[key(target.x,target.y)];
+  let outside=false,missingSupport=false;
   if(target.x!==p.x||target.y!==p.y){
     if((item.kind==='floor'||item.kind==='hull'||item.kind==='scaffold')&&s[item.kind].includes(key(target.x,target.y)))return fail('The destination already contains this tile type.');
     const result=checkPlacement(s,item.kind==='component'?p.type:item.kind,key(target.x,target.y),p.rotation||0,{ignore:item});
     if(result.rejected)return fail(result.message);
+    outside=!!result.outside;
+    missingSupport=!!result.missingSupport;
+  }else{
+    const result=checkPlacement(s,item.kind==='component'?p.type:item.kind,key(p.x,p.y),p.rotation||0,{ignore:item});
+    outside=!!result.outside;missingSupport=!!result.missingSupport;
   }
-  return {rejected:0,message:'',item,position,cells};
+  return {rejected:0,message:'',item,position,cells,outside,missingSupport};
 }
 export function moveItem(s,item,target){
   const preview=previewMove(s,item,target),fail=message=>({state:s,rejected:1,message,item});

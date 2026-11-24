@@ -129,6 +129,7 @@ function refreshModControls(){
   loadComponentAssets();
   $('engine-radius').textContent=engine.fieldRadius;$('extender-radius').textContent=extender.fieldRadius;
   $('field-reference-note').textContent=mods.chapter1?`Extenders: +${extender.supportOffset} tiles each, max ${extender.limit}, placed in the engine or an amplifier field. Amplifiers: radius 22.9, +200 tiles, max 4, inside the original engine field. Astrofuel thrusters multiply supported capacity.`:'Extenders must sit inside the engine’s original field. Each adds 250 tiles of capacity, up to 2,000.';
+  $('field-reference-note').textContent+=' You can plan outside these fields; unsupported placements are marked red.';
 }
 function changeMods(chapter,checked){
   if(drag)finish(null,true);
@@ -167,7 +168,7 @@ function refreshTools(){document.querySelectorAll('[data-layer]').forEach(b=>{co
 refreshModControls();
 if(layer==='engine'){$('mode-label').textContent=`${erase?'Erase':'Place'} ${engineProfile(state).name.toLowerCase()}`;$('shape-label').textContent=`${engineProfile(state).width} × ${engineProfile(state).height}`;}
 if(layer==='extender')$('tool-hint').textContent=`Place in the original engine field${normalizeMods(state.mods).chapter1?' or an amplifier field':''}. Radius ${extenderProfile(state).fieldRadius}; +${extenderProfile(state).supportOffset} tiles; maximum ${extenderProfile(state).limit}.`;
-if(layer==='scaffold')$('tool-hint').textContent='Draw a walkway that connects substructure without using capacity. Subscaffold cannot support buildings.';
+if(layer==='scaffold')$('tool-hint').textContent='Draw a walkway that connects substructure without using capacity. Buildings on subscaffold need substructure and are marked red.';
 if((shape==='circle'||shape==='disc')&&!erase)$('tool-hint').textContent=`Drag from center to edge. A ${Math.floor(engineProfile(state).fieldRadius)}-tile reach matches the engine field; ${Math.floor(extenderProfile(state).fieldRadius)} matches an extender.`;
 $('select-mode').classList.toggle('active',!layer&&!panMode);$('select-mode').setAttribute('aria-pressed',!layer&&!panMode);
 const selecting=!layer&&!panMode,name=selectionName();
@@ -207,6 +208,7 @@ if(selected){
   $('component-wiki').textContent=selected.source?'Mod definition ↗':'Wiki reference ↗';
   $('tool-hint').textContent=erase?'Click any tile of this component to remove it. Substructure stays in place.':`Click to place one component; the pointer anchors its top-left tile. ${selected.rotate?'Q / E or the buttons rotate before placing. ':''}${componentInfo(selected)} All footprint tiles need substructure.`;
 }
+if(layer&&!panMode)$('tool-hint').textContent+=' Outside-field and missing-substructure placements are allowed and marked red.';
 if(panMode){$('mode-label').textContent='Pan view';$('shape-label').textContent='Drag to pan · Pinch to zoom';$('tool-hint').textContent='Drag to pan without changing your design. Use two fingers to pan and pinch to zoom in any tool. Choose Pan again to return to editing.';}
 }
 function refreshDesign(){
@@ -221,7 +223,7 @@ $('empty').hidden=!!state.engine;$('used').textContent=state.floor.length;$('cap
 $('extender-count').textContent=`${state.extenders.length} / ${extenderProfile(state).limit}`;
 const support=capacityDetails(state);
 $('capacity-note').textContent=state.engine?`${Math.max(0,support.total-state.floor.length).toLocaleString()} tiles available${normalizeMods(state.mods).chapter1?` · (${support.base} + ${support.bonus}) × ${Number(support.multiplier.toFixed(2))}${state.scaffold?.length?` · ${state.scaffold.length} free subscaffold`:''}`:''}`:`Place an engine to support ${engineProfile(state).support} tiles.`;
-const checks=[];checks.push([!state.engine,state.engine?'Grav engine placed':'Place one grav engine to begin.']);if(validation.disabledTerrain.length)checks.push([true,'Subscaffold requires Chapter 1.']);if(validation.disabledEngine)checks.push([true,'The saved engine variant requires Chapter 1. Vanilla engine rules are active.']);if(validation.overlappingStructures.length)checks.push([true,`${validation.overlappingStructures.length} tiles contain overlapping structures.`]);if(state.engine){checks.push([validation.missing.length,validation.missing.length?`${validation.missing.length} structure tiles need substructure.`:'All structures have substructure.']);checks.push([validation.disconnected.length,validation.disconnected.length?`${validation.disconnected.length} floor tiles disconnected from engine.`:'All floor tiles connect to the engine.']);checks.push([validation.outside.length,validation.outside.length?`${validation.outside.length} tiles outside the grav field.`:'All floor tiles within grav field.']);checks.push([validation.over,validation.over?`${validation.over} tiles exceed capacity.`:'Within supported tile capacity.']);if(validation.invalidExtenders.length)checks.push([true,'Extenders must be within the original engine field.']);}if(state.engine&&(state.components||[]).length){
+const checks=[];checks.push([!state.engine,state.engine?'Grav engine placed':'Place one grav engine to begin.']);if(validation.disabledTerrain.length)checks.push([true,'Subscaffold requires Chapter 1.']);if(validation.disabledEngine)checks.push([true,'The saved engine variant requires Chapter 1. Vanilla engine rules are active.']);if(validation.overlappingStructures.length)checks.push([true,`${validation.overlappingStructures.length} tiles contain overlapping structures.`]);if(state.engine){checks.push([validation.missing.length,validation.missing.length?`${validation.missing.length} structure tiles need substructure (marked red).`:'All structures have substructure.']);checks.push([validation.disconnected.length,validation.disconnected.length?`${validation.disconnected.length} floor tiles disconnected from engine.`:'All floor tiles connect to the engine.']);checks.push([validation.outsideTiles.length,validation.outsideTiles.length?`${validation.outsideTiles.length} tiles have unsupported field placement (marked red).`:'All placed tiles and components have field support.']);checks.push([validation.over,validation.over?`${validation.over} tiles exceed capacity.`:'Within supported tile capacity.']);if(validation.invalidExtenders.length)checks.push([true,'Extenders must be within the original engine field.']);}if(state.engine&&(state.components||[]).length){
 checks.push([validation.blockedExhaust.length,validation.blockedExhaust.length?`${validation.blockedExhaust.length} thruster clearance tiles obstructed.`:'Thruster clearance is clear.']);
 if(validation.missingWall.length)checks.push([true,`${validation.missingWall.length} oxygen pumps need a hull tile.`]);
 if(validation.blockedPumps.length)checks.push([true,`${validation.blockedPumps.length} oxygen pumps face hull. Rotate them toward a non-hull tile.`]);
@@ -330,7 +332,11 @@ if($('diagonal-hull').checked&&hullTexturesReady){
 if(state.engine)drawEngine(state.engine);for(const e of state.extenders){const p=screen(e.x,e.y),im=assets[extenderProfile(state).sprites.south]||assets.extender;if(im)ctx.drawImage(im,p.x,p.y,zoom,zoom);}
 for(const c of state.components||[])if(!componentDefinition(c.type).network)drawComponent(c);
 if($('exhaust').checked)for(const k of new Set((state.components||[]).flatMap(c=>exhaustCells(c,state))))tileRect(k,'#d4a16a26');
-if($('issues').checked){for(const k of [...validation.blockedExhaust,...validation.overlappingStructures])tileRect(k,'#e977605c');for(const c of [...validation.missingWall,...validation.blockedPumps,...validation.outsideComponents])for(const k of componentCells(c))tileRect(k,'#e977605c');for(const k of new Set([...validation.disconnected,...validation.outside]))tileRect(k,'#df6f654f');for(const k of validation.missing){tileRect(k,'#dc956735');const [x,y]=point(k),p=screen(x,y);ctx.strokeStyle='#eca17d';ctx.lineWidth=1.5;ctx.strokeRect(p.x+2,p.y+2,zoom-4,zoom-4);}}
+if($('issues').checked){for(const k of [...validation.blockedExhaust,...validation.overlappingStructures])tileRect(k,'#e977605c');for(const c of [...validation.missingWall,...validation.blockedPumps])for(const k of componentCells(c))tileRect(k,'#e977605c');for(const k of new Set(validation.disconnected))tileRect(k,'#df6f654f');}
+if($('issues').checked)for(const k of validation.unsupportedTiles){
+  tileRect(k,'#e35b5b66');const [x,y]=point(k),p=screen(x,y);
+  ctx.strokeStyle='#ff7d7d';ctx.lineWidth=1.5;ctx.strokeRect(p.x+.75,p.y+.75,zoom-1.5,zoom-1.5);
+}
 if(layer&&hover&&!panMode&&!touchNavigation&&!drag?.pan){
   const def=componentDefinition(layer),remove=drag?drag.erase:erase;
   const candidate=def?{type:layer,x:hover.x,y:hover.y,rotation}:null;
@@ -338,10 +344,11 @@ if(layer&&hover&&!panMode&&!touchNavigation&&!drag?.pan){
   const hit=def&&remove?(state.components||[]).find(c=>c.type===layer&&componentCells(c).includes(key(hover.x,hover.y))):null;
   const actual=def?(remove?(hit?componentCells(hit):points):componentCells(candidate)):layer==='engine'&&!remove?engineFootprint(state,hover):points;
   const measurement=drag&&!drag.move&&shape!=='single'&&!def?{count:actual.length,minX:Infinity,minY:Infinity,maxX:-Infinity,maxY:-Infinity}:null;
-  const valid=remove||checkPlacement(state,layer,key(hover.x,hover.y),rotation).rejected===0;
+  const placement=remove?{rejected:0}:checkPlacement(state,layer,key(hover.x,hover.y),rotation);
+  const valid=!placement.rejected&&!placement.outside&&!placement.missingSupport;
   if(def&&!remove){if($('exhaust').checked)for(const k of exhaustCells(candidate,state))tileRect(k,'#dfb47e45');drawComponent(candidate,.6);}
   if(layer==='engine'&&!remove)drawEngine(hover,.6);
-  for(const k of actual){tileRect(k,remove?'#e7907c55':valid?'#c4dbac50':'#dd766551');const [x,y]=point(k),p=screen(x,y);ctx.strokeStyle=remove||!valid?'#dfa28d':'#cedfbc';ctx.lineWidth=1;ctx.strokeRect(p.x+.5,p.y+.5,zoom-1,zoom-1);if(measurement){measurement.minX=Math.min(measurement.minX,x);measurement.minY=Math.min(measurement.minY,y);measurement.maxX=Math.max(measurement.maxX,x);measurement.maxY=Math.max(measurement.maxY,y);}}
+  for(const k of actual){const supported=!placement.rejected&&(def||layer==='extender'?valid:layer==='engine'?!placement.missingSupport:supportedField.has(k)&&(layer!=='hull'||floorTiles.has(k)));tileRect(k,remove?'#e7907c55':supported?'#c4dbac50':'#dd766551');const [x,y]=point(k),p=screen(x,y);ctx.strokeStyle=remove||!supported?'#ff7d7d':'#cedfbc';ctx.lineWidth=1;ctx.strokeRect(p.x+.5,p.y+.5,zoom-1,zoom-1);if(measurement){measurement.minX=Math.min(measurement.minX,x);measurement.minY=Math.min(measurement.minY,y);measurement.maxX=Math.max(measurement.maxX,x);measurement.maxY=Math.max(measurement.maxY,y);}}
   if((shape==='circle'||shape==='disc')&&drag){const c=screen(drag.start.x+.5,drag.start.y+.5);ctx.fillStyle='#e2ebd4';ctx.fillRect(c.x-2,c.y-2,4,4);}
   if(measurement)drawShapeMeasurements(ctx,measurement,screen,zoom,{width,height});
 }
@@ -354,7 +361,7 @@ if(!layer){
   if(moving){
     const original=itemPosition(state,selection),preview={...original,...drag.target};
     const cells=selection.kind==='component'?componentCells(preview):selection.kind==='engine'?engineFootprint(state,preview):[key(preview.x,preview.y)];
-    for(const k of cells)tileRect(k,result.rejected?'#dd766566':'#b9dab855');
+    for(const k of cells)tileRect(k,result.rejected||result.outside||result.missingSupport?'#dd766566':'#b9dab855');
     if(selection.kind==='component')drawComponent(preview,.7);
     else if(selection.kind==='engine'||selection.kind==='extender'){
       const im=assets[selection.kind],size=selection.kind==='engine'?engineProfile(state).width:1,p=screen(preview.x-Math.floor(size/2),preview.y-Math.floor(size/2));
@@ -362,7 +369,7 @@ if(!layer){
       else if(im){ctx.save();ctx.globalAlpha=.7;ctx.drawImage(im,p.x,p.y,zoom*size,zoom*size);ctx.restore();}
     }
   }
-  ctx.save();ctx.strokeStyle=moving&&result.rejected?'#ed9985':'#f1cc7b';ctx.lineWidth=2;
+  ctx.save();ctx.strokeStyle=moving&&(result.rejected||result.outside||result.missingSupport)?'#ed9985':'#f1cc7b';ctx.lineWidth=2;
   for(const k of highlighted){const [x,y]=point(k),p=screen(x,y);ctx.strokeRect(p.x+1,p.y+1,zoom-2,zoom-2);}ctx.restore();
 }
 // Draw last so the original placement limit stays visible over floor, hull and extended fields.
