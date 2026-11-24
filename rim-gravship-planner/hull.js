@@ -1,4 +1,5 @@
-import {barrierJoins,componentCells} from './components.js';
+import {barrierJoins,componentCells,componentDefinition} from './components.js';
+import {engineProfile} from './mods.js';
 const key=(x,y)=>`${x},${y}`;
 const point=k=>k.split(',').map(Number);
 // Reference grids describe placement, not decorative pixels that overhang a cell.
@@ -145,18 +146,27 @@ function orthogonalQuarter(signature,qx,qy){
   return template?{...template,method:'orthogonal'}:null;
 }
 function hullIndex(s){
-  const hull=new Set(s.hull),floor=new Set(s.floor),candidates=new Set(hull),occupied=new Set(),barriers=new Map();
+  const hull=new Set(s.hull),floor=new Set([...s.floor,...s.scaffold||[]]),candidates=new Set(hull),occupied=new Set(),barriers=hullBarrierMasks(s);
   for(const c of s.components||[]){
-    for(const k of componentCells(c))occupied.add(k);
-    if(c.type==='vac-barrier'){
-      const mask=(barrierJoins(c,0,-1)?1:0)|(barrierJoins(c,1,0)?2:0)|(barrierJoins(c,0,1)?4:0)|(barrierJoins(c,-1,0)?8:0);
-      const k=key(c.x,c.y);barriers.set(k,(barriers.get(k)||0)|mask);
-    }
+    if(!componentDefinition(c.type).network)for(const k of componentCells(c))occupied.add(k);
   }
   for(const e of s.extenders||[])occupied.add(key(e.x,e.y));
-  if(s.engine)for(let y=s.engine.y-1;y<=s.engine.y+1;y++)for(let x=s.engine.x-1;x<=s.engine.x+1;x++)occupied.add(key(x,y));
+  const half=Math.floor(engineProfile(s).width/2);
+  if(s.engine)for(let y=s.engine.y-half;y<=s.engine.y+half;y++)for(let x=s.engine.x-half;x<=s.engine.x+half;x++)occupied.add(key(x,y));
   for(const k of hull){const [x,y]=point(k);for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)candidates.add(key(x+dx,y+dy));}
   return {hull,floor,candidates,occupied,barriers,emptyCorners:new Set()};
+}
+function hullBarrierMasks(s){
+  const masks=new Map();
+  for(const c of s.components||[]){
+    const d=componentDefinition(c.type);if(c.type!=='vac-barrier'&&!d.barrier&&!d.hullLike)continue;
+    for(const k of componentCells(c)){
+      const [x,y]=point(k);let mask=0;
+      for(const [dx,dy,bit] of [[0,-1,1],[1,0,2],[0,1,4],[-1,0,8]])if(barrierJoins(c,x+dx-c.x,y+dy-c.y))mask|=bit;
+      masks.set(k,(masks.get(k)||0)|mask);
+    }
+  }
+  return masks;
 }
 const adjacentHull=(x,y,hull)=>[[1,1],[-1,1],[-1,-1],[1,-1]].some(([sx,sy])=>hull.has(key(x+sx,y))&&hull.has(key(x,y+sy)));
 function emptyCorner(k,index){
@@ -268,11 +278,11 @@ export function prepareHullTexture(image,ref,createSurface=(w,h)=>new OffscreenC
 // Fast cardinal-only rendering uses the native atlas without matching or cleanup.
 export function drawSimpleHull(ctx,s,image,screen,zoom){
   if(!image)return;
-  const hull=new Set(s.hull),barriers=new Map((s.components||[]).filter(c=>c.type==='vac-barrier').map(c=>[key(c.x,c.y),c]));
+  const hull=new Set(s.hull),barriers=hullBarrierMasks(s);
   const w=image.width/3,h=image.height/3;
   const joins=(x,y,dx,dy)=>{
-    const neighbor=key(x+dx,y+dy),barrier=barriers.get(neighbor);
-    return hull.has(neighbor)||!!barrier&&barrierJoins(barrier,-dx,-dy);
+    const neighbor=key(x+dx,y+dy);
+    return hull.has(neighbor)||barrierAt(barriers.get(neighbor)||0,-dx,-dy);
   };
   for(const k of hull){
     const [x,y]=point(k),p=screen(x,y);
