@@ -161,6 +161,7 @@ export const MOD_COMPONENTS = [
       "Power": "1600 W generation"
     },
     "systems": {
+      "powerWatts": 1600.0,
       "generatorFuelPerDay": 3.0
     },
     "sprites": {
@@ -187,6 +188,7 @@ export const MOD_COMPONENTS = [
       "Power": "3800 W generation"
     },
     "systems": {
+      "powerWatts": 3800.0,
       "generatorFuelPerDay": 3.0
     },
     "sprites": {
@@ -1288,6 +1290,13 @@ export const MOD_COMPONENTS = [
       "Cooldown reduction": "0.02"
     },
     "systems": {
+      "powerUpgrades": [
+        {
+          "research": "VGE_HeatDissipation",
+          "factor": 2.0
+        }
+      ],
+      "heatPowerWatts": 50.0,
       "heatCapacity": 20.0,
       "heatDissipationPerHour": 1.0,
       "cooldownReduction": 0.02,
@@ -1332,6 +1341,13 @@ export const MOD_COMPONENTS = [
       "Cooldown reduction": "0.05"
     },
     "systems": {
+      "powerUpgrades": [
+        {
+          "research": "VGE_HeatDissipation",
+          "factor": 2.0
+        }
+      ],
+      "heatPowerWatts": 100.0,
       "heatCapacity": 100.0,
       "heatDissipationPerHour": 2.0,
       "cooldownReduction": 0.05,
@@ -1419,7 +1435,10 @@ export const MOD_COMPONENTS = [
     "specs": {
       "Power": "5000 W generation"
     },
-    "systems": {},
+    "systems": {
+      "powerWatts": 5000.0,
+      "powerKind": "gravcore"
+    },
     "sprites": {
       "south": "mods/chapter1/Things/Structures/Power/GravcorePowerCoil.png"
     },
@@ -1471,7 +1490,10 @@ export const MOD_COMPONENTS = [
     "specs": {
       "Power": "200 W generation"
     },
-    "systems": {},
+    "systems": {
+      "powerWatts": 200.0,
+      "powerKind": "solar"
+    },
     "atlas": true,
     "sprites": {
       "south": "mods/chapter1/Things/Structures/Power/SolarPaneling/SolarPanelling_Atlas.png"
@@ -2487,7 +2509,10 @@ export const MOD_COMPONENTS = [
     "specs": {
       "Power": "1000 W generation"
     },
-    "systems": {},
+    "systems": {
+      "powerWatts": 1000.0,
+      "powerKind": "emergency"
+    },
     "limit": 1,
     "sprites": {
       "south": "mods/chapter2/Things/Structures/Misc/EmergencyGravshipGenerator/EmergencyGenerator.png"
@@ -2854,7 +2879,10 @@ export const MOD_ENGINES = [
     "specs": {
       "Power": "2400 W generation"
     },
-    "systems": {},
+    "systems": {
+      "powerWatts": 2400.0,
+      "powerKind": "engine"
+    },
     "fieldRadius": 7.9,
     "support": 100,
     "sprites": {
@@ -2881,7 +2909,10 @@ export const MOD_ENGINES = [
     "specs": {
       "Power": "7200 W generation"
     },
-    "systems": {},
+    "systems": {
+      "powerWatts": 7200.0,
+      "powerKind": "engine"
+    },
     "fieldRadius": 23.9,
     "support": 500,
     "sprites": {
@@ -2999,6 +3030,10 @@ export const MOD_OVERRIDES = {
     "power-cell": {
       "note": "A power generator that passively draws a small amount of energy from gravitational waves passing through the gravship. Adjacent gravcore power cells will multiply their power output by 15% for each gravcore power cell.",
       "source": "https://github.com/Vanilla-Expanded/VanillaGravshipExpanded/blob/7212a0c11bc392079d1f8ac9395d6434aa29b8af/1.6/Patches/GravcorePowercell.xml",
+      "systems": {
+        "powerWatts": 1000.0,
+        "powerKind": "gravcore"
+      },
       "specs": {
         "Power": "1000 W generation"
       },
@@ -3007,6 +3042,10 @@ export const MOD_OVERRIDES = {
       }
     },
     "engine": {
+      "systems": {
+        "powerWatts": 4800.0,
+        "powerKind": "engine"
+      },
       "specs": {
         "Power": "4800 W generation"
       },

@@ -6,6 +6,7 @@ import {modOverride,componentEnabled} from './mods.js';
 const astrofuelSprites=MOD_COMPONENTS.find(c=>c.id==='VGE_AstrofuelPipe').sprites;
 // Planner-only presentation: show hidden pipe runs using the shared linked art.
 function plannerComponent(c){
+  if(c.id==='VGE_GravshipCapacitor')return {...c,group:'Power'};
   if(c.id==='VGE_AstrofuelPipe')return {...c,paintable:true};
   if(c.id==='VGE_HiddenAstrofuelPipe')return {...c,paintable:true,atlas:true,sprites:astrofuelSprites,spriteAlpha:.55};
   return c;
@@ -27,12 +28,22 @@ export const COMPONENTS = [
   {id:'heater',name:'Heater',width:1,height:1,group:'Life support',symbol:'H',color:'#d5a08d',wiki:'Heater',note:'Warms enclosed rooms.'},
   // Core SolarGenerator definition: 4 × 4 and rotatable=false.
   {id:'solar-generator',name:'Solar generator',width:4,height:4,group:'Power',symbol:'SOL',color:'#82a6bd',wiki:'Solar_generator',note:'Produces up to 1,700 W in sunlight; roofs reduce output.'},
+  {id:'wood-fired-generator',name:'Wood-fired generator',width:2,height:2,rotate:true,group:'Power',symbol:'WOOD',color:'#a7a17d',wiki:'Wood-fired_generator',sprites:{south:'Wood-fired_generator.png'},note:'Produces 1,000 W while fueled. Burns 22 wood per day; stores 75 wood.'},
+  {id:'chemfuel-generator',name:'Chemfuel powered generator',width:2,height:2,rotate:true,group:'Power',symbol:'CHEM',color:'#a5b5a2',wiki:'Chemfuel_powered_generator',sprites:{south:'Chemfuel_powered_generator.png'},note:'Produces 1,000 W while fueled. Burns 4.5 chemfuel per day; stores 30 chemfuel. Generator fuel is separate from flight fuel.'},
+  {id:'wind-turbine',name:'Wind turbine',width:7,height:2,rotate:true,group:'Power',symbol:'WIND',color:'#a5b9be',wiki:'Wind_turbine',sprites:{south:'Wind_turbine.png'},drawSize:[8,4],note:'Produces variable power: 2,300 W at normal wind speed, up to 3,450 W. Needs clear space in front and behind. Does not work in orbit. Wind clearance and weather are not simulated.'},
+  {id:'geothermal-generator',name:'Geothermal generator',width:6,height:6,group:'Power',symbol:'GEO',color:'#a7b3a4',wiki:'Geothermal_generator',sprites:{south:'Geothermal_generator.png'},note:'Produces 3,600 W over a steam geyser. Geysers are required in-game; terrain is not simulated in this planner.'},
+  {id:'watermill-generator',name:'Watermill generator',width:5,height:6,rotate:true,group:'Power',symbol:'HYDRO',color:'#ba9e7b',wiki:'Watermill_generator',sprites:{south:'Watermill_generator.png'},note:'Produces 1,100 W with its wheel in moving water and its base on firm ground. Nearby mills can reduce output. River terrain and interference are not simulated.'},
+  {id:'vanometric-power-cell',name:'Vanometric power cell',width:1,height:2,rotate:true,group:'Power',symbol:'VANO',color:'#c2c38c',wiki:'Vanometric_power_cell',sprites:{south:'Vanometric_power_cell.png'},note:'Produces 1,000 W without fuel. A rare quest reward that can be installed and moved, rather than constructed.'},
   ...MOD_COMPONENTS.map(plannerComponent),
 ];
 // South-facing console art uses the 3-wide by 2-deep orientation of its 2 × 3 footprint.
 const directional=prefix=>({south:`${prefix}_south.png`,north:`${prefix}_north.png`,east:`${prefix}_east.png`});
 // Vanilla flight values; source formulas and mod overrides are documented in SYSTEMS.md.
 const BASE_SYSTEMS={
+  'power-cell':{powerWatts:1200},'solar-generator':{powerWatts:1700,powerKind:'solar'},
+  'wood-fired-generator':{powerWatts:1000},'chemfuel-generator':{powerWatts:1000},
+  'wind-turbine':{powerWatts:2300,powerKind:'wind'},'geothermal-generator':{powerWatts:3600},
+  'watermill-generator':{powerWatts:1100},'vanometric-power-cell':{powerWatts:1000},
   'small-tank':{fuelCapacity:250,fuelKind:'chemfuel'},'large-tank':{fuelCapacity:750,fuelKind:'chemfuel'},
   'small-thruster':{range:10,fuelKind:'chemfuel'},'large-thruster':{range:16,fuelKind:'chemfuel'},
   'fuel-optimizer':{fuelSavings:.3},'oxygen-pump':{pumpPerSecond:0,airPerHundredPerSecond:.01},

@@ -1,13 +1,46 @@
 import {componentDefinition,componentBounds,exhaustCells} from './components.js';
-import {normalizeMods,componentEnabled} from './mods.js';
+import {normalizeMods,componentEnabled,engineProfile} from './mods.js';
 import {normalizeScenario} from './scenario.js';
-import {validate} from './model.js';
+import {validate,capacity} from './model.js';
 import {MOD_SYSTEM_RULES} from './mod-data.js';
 
 const clamp=(n,lo,hi)=>Math.max(lo,Math.min(hi,n));
 function adjacent(a,b){
   const x=componentBounds(a),y=componentBounds(b);
   return ((x.x+x.width===y.x||y.x+y.width===x.x)&&x.y<y.y+y.height&&y.y<x.y+x.height)||((x.y+x.height===y.y||y.y+y.height===x.y)&&x.x<y.x+y.width&&y.x<x.x+x.width);
+}
+
+function electricityEstimate(state,equipment,scenario,validation){
+  const disconnected=new Set(validation.disconnected),engineCapacity=capacity(state);
+  const connectedTiles=state.floor.filter(k=>!disconnected.has(k)).length;
+  const engineBase=state.engine?(engineProfile(state).systems?.powerWatts||0):0;
+  const engineWatts=engineCapacity>0?engineBase*Math.max(0,1-connectedTiles/engineCapacity):0;
+  const cores=equipment.filter(e=>e.sys.powerKind==='gravcore'),coreAt=new Map();
+  for(const e of cores){const b=componentBounds(e.c,state);for(let y=b.y;y<b.y+b.height;y++)for(let x=b.x;x<b.x+b.width;x++)coreAt.set(`${x},${y}`,e);}
+  let steadyWatts=0,solarWatts=0,windWatts=0,heatWatts=0,adjacencyWatts=0,emergencyGenerators=0;
+  for(const e of equipment){
+    const {sys}=e;let watts=sys.powerWatts||0;
+    if(sys.powerKind==='emergency'){emergencyGenerators++;continue;}
+    if(sys.powerKind==='solar')solarWatts+=watts;
+    else if(sys.powerKind==='wind')windWatts+=watts;
+    else{
+      if(sys.powerKind==='gravcore'){
+        const b=componentBounds(e.c,state),neighbors=new Set();
+        for(let y=b.y-1;y<=b.y+b.height;y++)for(let x=b.x-1;x<=b.x+b.width;x++){
+          if(x>=b.x&&x<b.x+b.width&&y>=b.y&&y<b.y+b.height)continue;
+          const neighbor=coreAt.get(`${x},${y}`);if(neighbor&&neighbor!==e)neighbors.add(neighbor);
+        }
+        const bonus=watts*Math.min(1.2,.15*neighbors.size);adjacencyWatts+=bonus;watts+=bonus;
+      }
+      steadyWatts+=watts;
+    }
+    if(scenario.heatPercent>0){
+      let heat=sys.heatPowerWatts||0;
+      if(scenario.heatResearch)for(const u of sys.powerUpgrades||[])if(u.research==='VGE_HeatDissipation')heat*=u.factor;
+      heatWatts+=heat;
+    }
+  }
+  return {totalWatts:engineWatts+steadyWatts+solarWatts+windWatts+heatWatts,engineWatts,engineBase,connectedTiles,engineCapacity,steadyWatts,solarWatts,windWatts,heatWatts,adjacencyWatts,emergencyGenerators};
 }
 
 // Planned equipment totals assume power, supplies, connections, and construction.
@@ -89,6 +122,7 @@ export function shipSystems(state,validation=validate(state)){
   if(modded&&overflow>0)warnings.push('The requested jump exceeds available heatsink capacity; excess heat enters the ship.');
   return {
     scenario,modded,
+    electricity:electricityEstimate(state,equipment,scenario,validation),
     flight:{fuelKind:modded?'Astrofuel':'Chemfuel',fuelCapacity,fuelLoaded,fuelSavings,fuelPerTile:ratio*factor,gasCeiling,electricCeiling,thrustCeiling,availableCeiling,range:maxRange,fullRange,blockedThrusters:blocked.length,readyThrusters:ready.length,installedThrusters:thrusters.length,electricEnergy:electric.reduce((n,e)=>n+(e.sys.energyCapacity||0),0),energyAvailable,electricBudget,fuelProductionPerDay:fuelProduction,refiningChemfuelPerDay:refiningChemfuel,generatorFuelPerDay:sum('generatorFuelPerDay')},
     jump:{distance:scenario.distance,reachable,equivalentCost,fuelSpent,energySpent,chargeSpentPercent:reachable&&energyAvailable>0?scenario.chargePercent*useRatio:0},
     oxygen:{capacity:oxygenCapacity,loaded:oxygenLoaded,productionPerDay:oxygenProduction,demandPerDay:oxygenDemand,netPerDay:oxygenNet,reserveDays:oxygenDays,oxyalgaePerDay:sum('oxyalgaePerDay'),pumpPerSecond:pumpFlow,pumpDuty:oxygenDuty,pumps:equipment.filter(e=>e.sys.airPerHundredPerSecond>0).length,cabinTiles,fillOxygen:modded?cabinTiles:0,fillSeconds:cabinTiles===0?0:airFlow>0?cabinTiles/airFlow:Infinity},

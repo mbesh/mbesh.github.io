@@ -1,0 +1,42 @@
+{
+  "credit": "RimWorld Wiki / Ludeon Studios",
+  "retrieved": "2026-11-24",
+  "images": [
+    {
+      "file": "Wood-fired_generator.png",
+      "page": "https://rimworldwiki.com/wiki/Wood-fired_generator",
+      "image": "https://rimworldwiki.com/images/9/9f/Fueledgenerator.png",
+      "sha256": "fa34801ec8b0cfcad1f8e393a60b3bca6563a108669c023c262b52666d06c2f4"
+    },
+    {
+      "file": "Chemfuel_powered_generator.png",
+      "page": "https://rimworldwiki.com/wiki/Chemfuel_powered_generator",
+      "image": "https://rimworldwiki.com/images/a/a8/Chemfuel_powered_generator.png",
+      "sha256": "56575a274c5b2963024dbe6f5db66e7cb89ab65bba4c407dc7dbff1eb2bba065"
+    },
+    {
+      "file": "Wind_turbine.png",
+      "page": "https://rimworldwiki.com/wiki/Wind_turbine",
+      "image": "https://rimworldwiki.com/images/a/ac/Wind_Power.png",
+      "sha256": "8283728f70d410d6c826a7cf11b0620c5279b493ecd1d7708059e8939f9c6604"
+    },
+    {
+      "file": "Geothermal_generator.png",
+      "page": "https://rimworldwiki.com/wiki/Geothermal_generator",
+      "image": "https://rimworldwiki.com/images/a/aa/Geothermal_plant.png",
+      "sha256": "8a3b10432061485816a82314048940746ae5243ab6a7c5fe03c4f5531ea7eca5"
+    },
+    {
+      "file": "Watermill_generator.png",
+      "page": "https://rimworldwiki.com/wiki/Watermill_generator",
+      "image": "https://rimworldwiki.com/images/e/e7/Watermill_generator.png",
+      "sha256": "6e5f4d492b81ac726ea1fc7b23c907642f45623715f91514246af26fd3e47cb9"
+    },
+    {
+      "file": "Vanometric_power_cell.png",
+      "page": "https://rimworldwiki.com/wiki/Vanometric_power_cell",
+      "image": "https://rimworldwiki.com/images/3/32/Vanometric_power_cell.png",
+      "sha256": "20d5c64c98600d3891be8dd9e30a3fe95c3b0b43e266edd26af668b0929b5f55"
+    }
+  ]
+}

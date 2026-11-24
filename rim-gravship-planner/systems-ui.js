@@ -9,6 +9,19 @@ export function renderSystems(report,document){
     const title=document.createElement('span'),amount=document.createElement('b');
     title.textContent=label;amount.textContent=value;row.append(title,amount);return row;
   }));
+  const p=report.electricity;
+  $('systems-electricity-total').textContent=quantity(p.totalWatts,'W');
+  rows('systems-electricity',[
+    ['Grav engine',quantity(p.engineWatts,'W')],
+    ['Other steady sources',quantity(p.steadyWatts,'W')],
+    ...(p.solarWatts?[['Solar at full sunlight',quantity(p.solarWatts,'W')]]:[]),
+    ...(p.windWatts?[['Wind at normal speed',quantity(p.windWatts,'W')]]:[]),
+    ...(p.heatWatts?[['From stored heat',quantity(p.heatWatts,'W')]]:[]),
+    ...(p.adjacencyWatts?[['Gravcore bonus (included)',quantity(p.adjacencyWatts,'W')]]:[]),
+  ]);
+  $('systems-electricity-note').textContent='Generation before electricity use. Assumes fueled generators, full sunlight, normal wind and suitable terrain; roofs, wind clearance and power-grid connections are not simulated.'
+    +(report.modded?' Engine output falls as connected substructure uses capacity. Heatsink output uses the Stored heat assumption.':' The vanilla grav engine does not generate electricity.')
+    +(p.emergencyGenerators?' Emergency generators are excluded because output follows demand.':'');
   $('systems-range').textContent=quantity(f.range,'tiles');
   rows('systems-flight',[
     [f.fuelKind,`${number(f.fuelLoaded)} / ${number(f.fuelCapacity)}`],
