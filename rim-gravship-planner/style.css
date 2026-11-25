@@ -158,6 +158,7 @@ select:focus-visible{outline:2px solid #9cddce;outline-offset:3px}
   .floating-palette{max-height:calc(100% - 24px)}
   .floating-settings>summary{min-height:44px}
   .floating-palette input[type=search],#save-name{font-size:16px;min-height:44px}
+  .floating-palette.searching{position:fixed;top:calc(var(--viewport-top,0px) + 12px);left:calc(var(--viewport-left,0px) + max(12px,env(safe-area-inset-left)));width:360px;max-width:calc(var(--viewport-width,100vw) - max(12px,env(safe-area-inset-left)) - max(12px,env(safe-area-inset-right)));max-height:calc(var(--app-height,100dvh) - 24px);z-index:6}
   .floating-settings label{min-height:44px}
   .saved-row{flex-wrap:wrap}
   .saved-row>div{flex-basis:100%}

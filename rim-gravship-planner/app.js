@@ -24,12 +24,37 @@ const touchPointers=new Map();
 function updateViewportSize(){
   const style=document.documentElement?.style;
   if(!style)return;
+  const viewport=window.visualViewport;
   style.setProperty('--header-height',`${$('app-header').getBoundingClientRect().height}px`);
-  style.setProperty('--app-height',`${window.visualViewport?.height||window.innerHeight}px`);
+  style.setProperty('--app-height',`${viewport?.height||window.innerHeight}px`);
+  style.setProperty('--viewport-top',`${viewport?.offsetTop||0}px`);
+  style.setProperty('--viewport-left',`${viewport?.offsetLeft||0}px`);
+  style.setProperty('--viewport-width',`${viewport?.width||window.innerWidth}px`);
+  if(!paletteMedia?.matches)$('palette-panel').classList.remove('searching');
+  keepSearchVisible();
 }
+function keepSearchVisible(){
+  const panel=$('palette-panel');
+  if(!panel.open||!panel.classList.contains('searching'))return;
+  const input=$('component-search').getBoundingClientRect(),bounds=panel.getBoundingClientRect();
+  const top=bounds.top+panel.querySelector('summary').getBoundingClientRect().height+12;
+  if(input.top<top||input.bottom>bounds.bottom-12)panel.scrollTop+=input.top-top;
+}
+$('component-search').onfocus=()=>{
+  if(!paletteMedia?.matches)return;
+  $('palette-panel').classList.add('searching');
+  updateViewportSize();
+};
+$('palette-panel').ontoggle=()=>{
+  if($('palette-panel').open)return;
+  // Keep search positioning through blur so a result does not move before its click.
+  $('palette-panel').classList.remove('searching');
+  if(document.activeElement===$('component-search'))$('component-search').blur();
+};
 new ResizeObserver(updateViewportSize).observe($('app-header'));
 window.addEventListener('resize',updateViewportSize);
 window.visualViewport?.addEventListener('resize',updateViewportSize);
+window.visualViewport?.addEventListener('scroll',updateViewportSize);
 updateViewportSize();
 for(const field of scenarioFields)$(`scenario-${field}`).onchange=()=>{
   if(drag)finish(null,true);
@@ -61,7 +86,7 @@ function draft(){clearTimeout(draftTimer);draftTimer=setTimeout(()=>store(DRAFT,
 function changed(){dirty=true;draft();refresh();}
 function commit(next){if(JSON.stringify(next)===JSON.stringify(state))return;undo.push(structuredClone(state));if(undo.length>80)undo.shift();redo=[];state=next;changed();}
 function paintableLayer(type=layer){const def=componentDefinition(type,state);return !!type&&type!=='engine'&&type!=='extender'&&(!def||!!def.paintable);}
-function chooseLayer(v){if(drag)finish(null,true);panMode=false;layer=v;selection=null;erase=false;rotation=0;if(v&&!paintableLayer(v))shape='single';refresh();}
+function chooseLayer(v){if(drag)finish(null,true);panMode=false;layer=v;selection=null;erase=false;rotation=componentDefinition(v,state)?.defaultRotation??0;if(v&&!paintableLayer(v))shape='single';refresh();}
 $('select-mode').onclick=()=>{chooseLayer(null);collapsePaletteOnNarrowScreen();};
 $('remove-selected').onclick=removeSelected;
 function selectionName(){
@@ -102,6 +127,7 @@ function filterComponents(){
   document.querySelectorAll('.component-item').forEach(b=>{const d=componentDefinition(b.dataset.layer,state);b.hidden=!componentEnabled(state,d)||![d.name,b.dataset.group,d.requiresDlc||''].join(' ').toLowerCase().includes(query);if(!b.hidden)visible++;});
   document.querySelectorAll('.component-group').forEach(group=>{group.hidden=![...document.querySelectorAll('.component-item')].some(b=>b.dataset.group===group.dataset.group&&!b.hidden);if(query)group.open=true;});
   $('no-components').hidden=visible>0;
+  keepSearchVisible();
 }
 $('component-search').oninput=filterComponents;
 let modControlsSignature=null;
@@ -572,7 +598,7 @@ function loadHullTextures(){
 function loadComponentAssets(){
   const signature=JSON.stringify([state.mods,state.engineType,[...new Set((state.components||[]).map(c=>c.type))].sort(),!!state.scaffold?.length]);
   if(assetSignature===signature)return;assetSignature=signature;
-  const files=new Set([...availableComponents(state).filter(d=>!d.chapter&&d.group!=='Furniture'),...(state.components||[]).map(c=>componentDefinition(c.type,state)),engineProfile(state),extenderProfile(state)].flatMap(d=>[...Object.values(d.sprites),...Object.values(d.topSprites||{}),d.topSprite].filter(Boolean)));
+  const files=new Set([...availableComponents(state).filter(d=>!d.chapter&&d.group!=='Furniture'&&d.group!=='Production'),...(state.components||[]).map(c=>componentDefinition(c.type,state)),engineProfile(state),extenderProfile(state)].flatMap(d=>[...Object.values(d.sprites),...Object.values(d.topSprites||{}),d.topSprite].filter(Boolean)));
   if(normalizeMods(state.mods).chapter1||state.scaffold?.length)files.add('mods/chapter1/Things/Terrain/Substructure/Subscaffolding.png');
   for(const file of files)loadImage(file);
 }

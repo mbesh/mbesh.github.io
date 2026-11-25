@@ -1,0 +1,372 @@
+{
+  "credit": "RimWorld Wiki / Ludeon Studios",
+  "retrieved": "2026-11-25",
+  "images": [
+    {
+      "file": "BioferriteHarvester_east.png",
+      "page": "https://rimworldwiki.com/wiki/Bioferrite_harvester",
+      "image": "https://rimworldwiki.com/images/9/99/BioferriteHarvester_east.png",
+      "sha256": "7f1c035748b08a362d9b970953bb24f1b5be48f11883b9120c3d47a06506a843"
+    },
+    {
+      "file": "BioferriteShaper_north.png",
+      "page": "https://rimworldwiki.com/wiki/Bioferrite_shaper",
+      "image": "https://rimworldwiki.com/images/2/23/BioferriteShaper_north.png",
+      "sha256": "20c44de8bb41f7de8bcefaacf143f2e25466d4ce48e4ded6274f10d4386c082f"
+    },
+    {
+      "file": "Biofuel_refinery_east.png",
+      "page": "https://rimworldwiki.com/wiki/Biofuel_refinery",
+      "image": "https://rimworldwiki.com/images/d/dc/Biofuel_refinery_east.png",
+      "sha256": "5e3c48a519597aab196698a5eb3b2fba740f7644c9f7ccf4300bc11c55602ecd"
+    },
+    {
+      "file": "Biofuel_refinery_north.png",
+      "page": "https://rimworldwiki.com/wiki/Biofuel_refinery",
+      "image": "https://rimworldwiki.com/images/9/9d/Biofuel_refinery_north.png",
+      "sha256": "cd66468c22978fdaf306a6bded8ac92f63a60e9dbe9fbf3a4af52f4b44a5073a"
+    },
+    {
+      "file": "Biofuel_refinery_south.png",
+      "page": "https://rimworldwiki.com/wiki/Biofuel_refinery",
+      "image": "https://rimworldwiki.com/images/5/58/Biofuel_refinery_south.png",
+      "sha256": "174116cfb9842f479b2a45bafe6c456b74e8db503cf207ed8a8f5357234f33bb"
+    },
+    {
+      "file": "Butcher_spot.png",
+      "page": "https://rimworldwiki.com/wiki/Butcher_spot",
+      "image": "https://rimworldwiki.com/images/d/d9/Butcher_spot.png",
+      "sha256": "53af61a2d132fd9c79523cba85f4708c53af07fb074f73eaf3c6774b7bbe8f93"
+    },
+    {
+      "file": "Campfire.png",
+      "page": "https://rimworldwiki.com/wiki/Campfire",
+      "image": "https://rimworldwiki.com/images/0/01/Campfire.png",
+      "sha256": "6e665a59bcf2fc7a32a97c2760aae2e34ed75e9b60f87bae821de9a652073526"
+    },
+    {
+      "file": "Component_assembly_bench.png",
+      "page": "https://rimworldwiki.com/wiki/Fabrication_bench",
+      "image": "https://rimworldwiki.com/images/4/4e/Component_assembly_bench.png",
+      "sha256": "d452a91bd0e5098fe4c5871b030da251e79121abf45da62c1b9f1ad2aa0ec16f"
+    },
+    {
+      "file": "Crafting_spot.png",
+      "page": "https://rimworldwiki.com/wiki/Crafting_spot",
+      "image": "https://rimworldwiki.com/images/f/f5/Crafting_spot.png",
+      "sha256": "39545893cc5778b728389d0099ad8460d5c7d44e67651aa8063087b7bf38b2b5"
+    },
+    {
+      "file": "Crematorium_east.png",
+      "page": "https://rimworldwiki.com/wiki/Electric_crematorium",
+      "image": "https://rimworldwiki.com/images/2/28/Crematorium_east.png",
+      "sha256": "a257e0d1bf85aa34732601e002bb673ca7519afffc0646a221570e9c6d4d5341"
+    },
+    {
+      "file": "Crematorium_north.png",
+      "page": "https://rimworldwiki.com/wiki/Electric_crematorium",
+      "image": "https://rimworldwiki.com/images/f/f1/Crematorium_north.png",
+      "sha256": "7ac39e7aff534cb1f54121e2e9689ac219b88d65e72636a5fb450ec7a85f3356"
+    },
+    {
+      "file": "Crematorium_south.png",
+      "page": "https://rimworldwiki.com/wiki/Electric_crematorium",
+      "image": "https://rimworldwiki.com/images/0/06/Crematorium_south.png",
+      "sha256": "371a13b28f540b0d211a80d5bb1d7c77af6f8cb6476c275f3cf17e05dbbe1c74"
+    },
+    {
+      "file": "Deep_drill.png",
+      "page": "https://rimworldwiki.com/wiki/Deep_drill",
+      "image": "https://rimworldwiki.com/images/a/ad/Deep_drill.png",
+      "sha256": "587c7b789585fd7740c98045a0ba2f1f9e6bd689a3eb6d3587a65e0c4d7e62b5"
+    },
+    {
+      "file": "Drug_lab.png",
+      "page": "https://rimworldwiki.com/wiki/Drug_lab",
+      "image": "https://rimworldwiki.com/images/5/53/Drug_lab.png",
+      "sha256": "1dd561f069a6d9f215ea42577dbf993741824d076553fef1b3072ad83f96c42e"
+    },
+    {
+      "file": "Electric_smelter.png",
+      "page": "https://rimworldwiki.com/wiki/Electric_smelter",
+      "image": "https://rimworldwiki.com/images/2/2e/Electric_smelter.png",
+      "sha256": "560a4fdf4008f4ad4cc2b072bd0478f2fea633899f52fc324500b4be611d63c6"
+    },
+    {
+      "file": "Electric_smelter_east.png",
+      "page": "https://rimworldwiki.com/wiki/Electric_smelter",
+      "image": "https://rimworldwiki.com/images/4/44/Electric_smelter_east.png",
+      "sha256": "8a2ad53bce5c0ecaa8eabcad370580e5e100fe54b5b478505bc2dc47c43ee8e3"
+    },
+    {
+      "file": "Electric_smelter_north.png",
+      "page": "https://rimworldwiki.com/wiki/Electric_smelter",
+      "image": "https://rimworldwiki.com/images/2/24/Electric_smelter_north.png",
+      "sha256": "0b744506e6ef942a53ffbb7bbd10a3d22466ba4f34c9955e350c427fc7c59b75"
+    },
+    {
+      "file": "Electric_smelter_south.png",
+      "page": "https://rimworldwiki.com/wiki/Electric_smelter",
+      "image": "https://rimworldwiki.com/images/6/67/Electric_smelter_south.png",
+      "sha256": "a65b518c10b305d0d6ccc3f4b47622b454071cf30f7351304d8fd78f687dda7f"
+    },
+    {
+      "file": "FermentingBarrel.png",
+      "page": "https://rimworldwiki.com/wiki/Fermenting_barrel",
+      "image": "https://rimworldwiki.com/images/d/d5/FermentingBarrel.png",
+      "sha256": "c9dcdd2ab3739580816f669fe6772ec9de3543b0506cbafd0ab14fb7d4f584bc"
+    },
+    {
+      "file": "Fueled_Stove.jpg",
+      "page": "https://rimworldwiki.com/wiki/Fueled_stove",
+      "image": "https://rimworldwiki.com/images/d/d5/Fueled_Stove.jpg",
+      "sha256": "73620e516e3b0d431d16fe050526e052b655f640d64b9df5236407e2a29c2566"
+    },
+    {
+      "file": "Fueled_smithy.png",
+      "page": "https://rimworldwiki.com/wiki/Fueled_smithy",
+      "image": "https://rimworldwiki.com/images/c/cc/Fueled_smithy.png",
+      "sha256": "53b96db9b4a6d94c1353cbf29a959860335d46260956eaccc0a3fa8e77e9f11f"
+    },
+    {
+      "file": "Gene_assembler_south.png",
+      "page": "https://rimworldwiki.com/wiki/Gene_assembler",
+      "image": "https://rimworldwiki.com/images/3/35/Gene_assembler_south.png",
+      "sha256": "88f59ca36cd8bb9fed6606cbfd1e46a78a78f99e679e46e21ce73b6e924bd41f"
+    },
+    {
+      "file": "Gene_extractor_south.png",
+      "page": "https://rimworldwiki.com/wiki/Gene_extractor",
+      "image": "https://rimworldwiki.com/images/9/9d/Gene_extractor_south.png",
+      "sha256": "3289802bf52bc192168176e910df11f7297ba4b3f1b4ed7e8764e6eb8f16b5b6"
+    },
+    {
+      "file": "Gene_processor.png",
+      "page": "https://rimworldwiki.com/wiki/Gene_processor",
+      "image": "https://rimworldwiki.com/images/b/b3/Gene_processor.png",
+      "sha256": "a7b0116ce7fe2bbdc4cc772a634ab02bfd54c249515421872f9275a7557c9111"
+    },
+    {
+      "file": "Genebank_north.png",
+      "page": "https://rimworldwiki.com/wiki/Gene_bank",
+      "image": "https://rimworldwiki.com/images/f/f7/Genebank_north.png",
+      "sha256": "e0471d1a5c68fd44ac8d3d34a0e79d2115254fd1c1a0247f46837487b3f32063"
+    },
+    {
+      "file": "GrowthVat_south.png",
+      "page": "https://rimworldwiki.com/wiki/Growth_vat",
+      "image": "https://rimworldwiki.com/images/e/e9/GrowthVat_south.png",
+      "sha256": "38e010a356d76f0338acb0ea6cfdf10c6c3333810f24f7bb2121a3d4432b5e48"
+    },
+    {
+      "file": "Hi-tech_research_bench.png",
+      "page": "https://rimworldwiki.com/wiki/Hi-tech_research_bench",
+      "image": "https://rimworldwiki.com/images/6/66/Hi-tech_research_bench.png",
+      "sha256": "e84ea0397eae03a94b05707540607a8660adeb34c9d6a1d814df25cb2f570d66"
+    },
+    {
+      "file": "Hopper.png",
+      "page": "https://rimworldwiki.com/wiki/Hopper",
+      "image": "https://rimworldwiki.com/images/8/81/Hopper.png",
+      "sha256": "acb2dbc5ce400caa1228c7fd0755384e1c269796de6e9a190a9d7af78df5fdcf"
+    },
+    {
+      "file": "Hopper_east.png",
+      "page": "https://rimworldwiki.com/wiki/Hopper",
+      "image": "https://rimworldwiki.com/images/a/a7/Hopper_east.png",
+      "sha256": "d1431cee0ab825066d029648148693c1920baacf56c2647d8d286d6f380c4996"
+    },
+    {
+      "file": "Hopper_north.png",
+      "page": "https://rimworldwiki.com/wiki/Hopper",
+      "image": "https://rimworldwiki.com/images/7/71/Hopper_north.png",
+      "sha256": "e0f1dc926ea245c2e140767a29510e2ea72f92696700990e7e43d9a133f2252e"
+    },
+    {
+      "file": "Hopper_south.png",
+      "page": "https://rimworldwiki.com/wiki/Hopper",
+      "image": "https://rimworldwiki.com/images/1/1b/Hopper_south.png",
+      "sha256": "97a9ca8cb0f85d42b66d3b714a7e342a7b62323eb1600e09e2dadc7d7c118fa7"
+    },
+    {
+      "file": "HydroponicsTable.png",
+      "page": "https://rimworldwiki.com/wiki/Hydroponics_basin",
+      "image": "https://rimworldwiki.com/images/0/03/HydroponicsTable.png",
+      "sha256": "15a0c77224c5bc4e37faec82009c20b05290618ac4bc9b1b205becbf20339111"
+    },
+    {
+      "file": "Hydroponics_basin_east.png",
+      "page": "https://rimworldwiki.com/wiki/Hydroponics_basin",
+      "image": "https://rimworldwiki.com/images/6/62/Hydroponics_basin_east.png",
+      "sha256": "f68e3fde66d75a60d4b4c10ca844b9bd416bb029ee435483d345c4350ed1b1f8"
+    },
+    {
+      "file": "Hydroponics_basin_north.png",
+      "page": "https://rimworldwiki.com/wiki/Hydroponics_basin",
+      "image": "https://rimworldwiki.com/images/3/34/Hydroponics_basin_north.png",
+      "sha256": "bca13482d8cb330f70a6732127cf0026e68a5a7b4fb3f966751965da7bdda20b"
+    },
+    {
+      "file": "MachiningTable.png",
+      "page": "https://rimworldwiki.com/wiki/Machining_table",
+      "image": "https://rimworldwiki.com/images/2/28/MachiningTable.png",
+      "sha256": "291e5c7a875980d39085337481ff8f5f69fe0f01b5c9153b33d2f2e2c0a597a5"
+    },
+    {
+      "file": "MechGestatorLarge_MenuIcon.png",
+      "page": "https://rimworldwiki.com/wiki/Large_mech_gestator",
+      "image": "https://rimworldwiki.com/images/a/a6/MechGestatorLarge_MenuIcon.png",
+      "sha256": "19b2a627a548eb098aca9292e8f8559744e585b22e46de9052da525b61e178ba"
+    },
+    {
+      "file": "MechGestatorStandard_MenuIcon.png",
+      "page": "https://rimworldwiki.com/wiki/Mech_gestator",
+      "image": "https://rimworldwiki.com/images/6/63/MechGestatorStandard_MenuIcon.png",
+      "sha256": "eb1fa16829a80fd69148cbd26e37a0bbdc17220a07098c80b03a706a1159f27d"
+    },
+    {
+      "file": "Multi-analyzer.png",
+      "page": "https://rimworldwiki.com/wiki/Multi-analyzer",
+      "image": "https://rimworldwiki.com/images/b/bf/Multi-analyzer.png",
+      "sha256": "8f3307467c1aa8a1b4819c555c5ceab125ed8662a2a1b7cbfbd70699cb749a65"
+    },
+    {
+      "file": "Nutrient_paste_dispenser.png",
+      "page": "https://rimworldwiki.com/wiki/Nutrient_paste_dispenser",
+      "image": "https://rimworldwiki.com/images/6/61/Nutrient_paste_dispenser.png",
+      "sha256": "826461c318b9a95300803fbbbbbcb708549a2e863a21b604b99d7093d3f3c79e"
+    },
+    {
+      "file": "ResearchBench.png",
+      "page": "https://rimworldwiki.com/wiki/Simple_research_bench",
+      "image": "https://rimworldwiki.com/images/d/d3/ResearchBench.png",
+      "sha256": "fd34c8dbbcc057254b24a38f4323f0ffcc0cfa7ef9b04320f721cfcfcd0c1742"
+    },
+    {
+      "file": "SerumCentrifuge_north.png",
+      "page": "https://rimworldwiki.com/wiki/Serum_lab",
+      "image": "https://rimworldwiki.com/images/7/7d/SerumCentrifuge_north.png",
+      "sha256": "6ff55ecba5c4b6dd685870761aa62e174e99d8cca349b76632f3f52f3deeaddd"
+    },
+    {
+      "file": "StonecuttersTable.png",
+      "page": "https://rimworldwiki.com/wiki/Stonecutter's_table",
+      "image": "https://rimworldwiki.com/images/4/49/StonecuttersTable.png",
+      "sha256": "2dbcf03ec9fcfb0b3635694d59ac2b54bffe9a2463f5a337d7f69a9afe9ead68"
+    },
+    {
+      "file": "SubcoreEncoder_north.png",
+      "page": "https://rimworldwiki.com/wiki/Subcore_encoder",
+      "image": "https://rimworldwiki.com/images/4/42/SubcoreEncoder_north.png",
+      "sha256": "593dcc136a0b971de0b8d6ce1b7703fdbe60ffd6b5cfd1dbd4ca579e2ba680d9"
+    },
+    {
+      "file": "SubcoreRipscanner_north.png",
+      "page": "https://rimworldwiki.com/wiki/Subcore_ripscanner",
+      "image": "https://rimworldwiki.com/images/6/64/SubcoreRipscanner_north.png",
+      "sha256": "b877499b50066193644debe2032fe8a240f99cd8bedacdf73317e77d6301861f"
+    },
+    {
+      "file": "SubcoreSoftscanner_north.png",
+      "page": "https://rimworldwiki.com/wiki/Subcore_softscanner",
+      "image": "https://rimworldwiki.com/images/d/d0/SubcoreSoftscanner_north.png",
+      "sha256": "f9dc04326722dc48b34bcefcc473eddbf97677a5da5bd6252d19ba66e1756016"
+    },
+    {
+      "file": "TableButcher.png",
+      "page": "https://rimworldwiki.com/wiki/Butcher_table",
+      "image": "https://rimworldwiki.com/images/c/cb/TableButcher.png",
+      "sha256": "c64da977f5dde2c4cb6fc364304f052aaa6f3795170747b316ada2727e065030"
+    },
+    {
+      "file": "TableCookStove.png",
+      "page": "https://rimworldwiki.com/wiki/Electric_stove",
+      "image": "https://rimworldwiki.com/images/8/89/TableCookStove.png",
+      "sha256": "3e415cab3cd29ff58f5fd5bf3c594e924a68cb6ce61ca13939bd6ab5ed8f1277"
+    },
+    {
+      "file": "TableSculpting.png",
+      "page": "https://rimworldwiki.com/wiki/Art_bench",
+      "image": "https://rimworldwiki.com/images/4/49/TableSculpting.png",
+      "sha256": "7f519299833ad2a0a787474f613f64eedcc9c2dd1ecf1c01051d8488f62b87d5"
+    },
+    {
+      "file": "TableSmithing.png",
+      "page": "https://rimworldwiki.com/wiki/Electric_smithy",
+      "image": "https://rimworldwiki.com/images/7/7b/TableSmithing.png",
+      "sha256": "87cf827892f01dbe6e18e399b5c413741225604948e6f96bf6bc381c68f951de"
+    },
+    {
+      "file": "Table_brewery_east.png",
+      "page": "https://rimworldwiki.com/wiki/Brewery",
+      "image": "https://rimworldwiki.com/images/4/44/Table_brewery_east.png",
+      "sha256": "83c1e55bb22992ab19f18d472132c0f72f4da710f085819de5d607094473381f"
+    },
+    {
+      "file": "Table_brewery_north.png",
+      "page": "https://rimworldwiki.com/wiki/Brewery",
+      "image": "https://rimworldwiki.com/images/7/7a/Table_brewery_north.png",
+      "sha256": "cd0c5ecea9e79d93124b7b2d7b9a690e5c5d42a9de838f4c6707a8496567e61d"
+    },
+    {
+      "file": "Table_brewery_south.png",
+      "page": "https://rimworldwiki.com/wiki/Brewery",
+      "image": "https://rimworldwiki.com/images/6/63/Table_brewery_south.png",
+      "sha256": "7ef0afeced826d74c5178e92782a835ea51dbed339183a61b13f3f835d2e8910"
+    },
+    {
+      "file": "Table_tailor_electric_east.png",
+      "page": "https://rimworldwiki.com/wiki/Electric_tailor_bench",
+      "image": "https://rimworldwiki.com/images/a/a9/Table_tailor_electric_east.png",
+      "sha256": "9eae18904616e2f17624ce93f1bd19e01697e1807b7c5ec207fd442747a7a1f0"
+    },
+    {
+      "file": "Table_tailor_electric_north.png",
+      "page": "https://rimworldwiki.com/wiki/Electric_tailor_bench",
+      "image": "https://rimworldwiki.com/images/e/e9/Table_tailor_electric_north.png",
+      "sha256": "02a13aee60dcf3c992cefae1796bddcee53f4a836787866cf0f8fd6a3a3d2daa"
+    },
+    {
+      "file": "Table_tailor_electric_south.png",
+      "page": "https://rimworldwiki.com/wiki/Electric_tailor_bench",
+      "image": "https://rimworldwiki.com/images/9/9c/Table_tailor_electric_south.png",
+      "sha256": "3748692fea86ce846d1da3f4acfd7abe41d27e62f8d9cc7f23fb6600ada37df4"
+    },
+    {
+      "file": "Table_tailor_hand_east.png",
+      "page": "https://rimworldwiki.com/wiki/Hand_tailor_bench",
+      "image": "https://rimworldwiki.com/images/3/39/Table_tailor_hand_east.png",
+      "sha256": "5c54f1da985631d6643b366612a726e6d64526d0708bce7494cb958c917dbd38"
+    },
+    {
+      "file": "Table_tailor_hand_north.png",
+      "page": "https://rimworldwiki.com/wiki/Hand_tailor_bench",
+      "image": "https://rimworldwiki.com/images/f/f9/Table_tailor_hand_north.png",
+      "sha256": "bb0997c4ec55c00377d9230a25093fea653615702d256ad1f887e4a8d6caf10e"
+    },
+    {
+      "file": "Table_tailor_hand_south.png",
+      "page": "https://rimworldwiki.com/wiki/Hand_tailor_bench",
+      "image": "https://rimworldwiki.com/images/0/0d/Table_tailor_hand_south.png",
+      "sha256": "a92fe1d9c66d02f18131bcbd631804d20c95d4ca714f0c44c1ecd55504761be5"
+    },
+    {
+      "file": "Tool_cabinet_east.png",
+      "page": "https://rimworldwiki.com/wiki/Tool_cabinet",
+      "image": "https://rimworldwiki.com/images/c/cd/Tool_cabinet_east.png",
+      "sha256": "236be021836910c80cda48f1076a012eec43df16c8948c288c78f72856e563f6"
+    },
+    {
+      "file": "Tool_cabinet_north.png",
+      "page": "https://rimworldwiki.com/wiki/Tool_cabinet",
+      "image": "https://rimworldwiki.com/images/c/c1/Tool_cabinet_north.png",
+      "sha256": "7413a3594d876cb4294e49587b89a1f6dc35a807dbb5728f6799b7de3e655531"
+    },
+    {
+      "file": "Tool_cabinet_south.png",
+      "page": "https://rimworldwiki.com/wiki/Tool_cabinet",
+      "image": "https://rimworldwiki.com/images/a/af/Tool_cabinet_south.png",
+      "sha256": "8e6cb3eb4e8accf84663ddcb462849f65731f4770e6f42dcf6c5957ebcbf7593"
+    }
+  ]
+}

@@ -3,6 +3,7 @@
 // New component anchors are the top-left tile of their rotated footprint.
 import {MOD_COMPONENTS} from './mod-data.js';
 import {FURNITURE} from './furniture.js';
+import {PRODUCTION} from './production.js';
 import {modOverride,componentEnabled} from './mods.js';
 const astrofuelSprites=MOD_COMPONENTS.find(c=>c.id==='VGE_AstrofuelPipe').sprites;
 // Planner-only presentation: show hidden pipe runs using the shared linked art.
@@ -36,6 +37,7 @@ export const COMPONENTS = [
   {id:'geothermal-generator',name:'Geothermal generator',width:6,height:6,group:'Power',symbol:'GEO',color:'#a7b3a4',wiki:'Geothermal_generator',sprites:{south:'Geothermal_generator.png'},note:'Produces 3,600 W over a steam geyser. Geysers are required in-game; terrain is not simulated in this planner.'},
   {id:'watermill-generator',name:'Watermill generator',width:5,height:6,rotate:true,group:'Power',symbol:'HYDRO',color:'#ba9e7b',wiki:'Watermill_generator',sprites:{south:'Watermill_generator.png'},note:'Produces 1,100 W with its wheel in moving water and its base on firm ground. Nearby mills can reduce output. River terrain and interference are not simulated.'},
   {id:'vanometric-power-cell',name:'Vanometric power cell',width:1,height:2,rotate:true,group:'Power',symbol:'VANO',color:'#c2c38c',wiki:'Vanometric_power_cell',sprites:{south:'Vanometric_power_cell.png'},note:'Produces 1,000 W without fuel. A rare quest reward that can be installed and moved, rather than constructed.'},
+  ...PRODUCTION,
   ...FURNITURE,
   ...MOD_COMPONENTS.map(plannerComponent),
 ];
@@ -78,7 +80,8 @@ export function directionalSprite(sprites,rotation){
   const direction=ROTATIONS[rotation].toLowerCase();
   if(sprites[direction])return {file:sprites[direction],flip:false,turn:0};
   if(direction==='west'&&sprites.east)return {file:sprites.east,flip:true,turn:0};
-  return {file:sprites.south,flip:false,turn:rotation};
+  const source=ROTATIONS.findIndex(d=>sprites[d.toLowerCase()]);
+  return {file:sprites[ROTATIONS[source].toLowerCase()],flip:false,turn:(rotation-source+4)%4};
 }
 // Source rectangles exclude transparent padding; draw rectangles are in tile units.
 // The north/south arch reaches both hull sides and overhangs the cell above.
