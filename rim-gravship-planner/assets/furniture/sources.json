@@ -1,0 +1,462 @@
+{
+  "credit": "RimWorld Wiki / Ludeon Studios",
+  "retrieved": "2026-11-24",
+  "images": [
+    {
+      "file": "Animal_bed.png",
+      "page": "https://rimworldwiki.com/wiki/Animal_bed",
+      "image": "https://rimworldwiki.com/images/e/e5/Animal_bed.png",
+      "sha256": "f2824ecd8021c7aa338333af7dea5365cf5a4176803e12599f69c41bb7ed7168"
+    },
+    {
+      "file": "Animal_sleeping_box.png",
+      "page": "https://rimworldwiki.com/wiki/Animal_sleeping_box",
+      "image": "https://rimworldwiki.com/images/a/a1/Animal_sleeping_box.png",
+      "sha256": "907a095d7a01f4dd11b5928564f37518bd5f5de1420939791cc0b42852f4f13b"
+    },
+    {
+      "file": "Animal_sleeping_spot.png",
+      "page": "https://rimworldwiki.com/wiki/Animal_sleeping_spot",
+      "image": "https://rimworldwiki.com/images/c/c0/Animal_sleeping_spot.png",
+      "sha256": "19d704fe994d338f2f08226d3166cc6951ac2fd52bde6b5f93e35a1a50ead5a9"
+    },
+    {
+      "file": "Animus_stone.png",
+      "page": "https://rimworldwiki.com/wiki/Animus_stone",
+      "image": "https://rimworldwiki.com/images/7/71/AnimusStone.png",
+      "sha256": "6dc205a175e99b57fb8998e676a57db5b4f65e398c7b129c6ec90c646227f3be"
+    },
+    {
+      "file": "Armchair.png",
+      "page": "https://rimworldwiki.com/wiki/Armchair",
+      "image": "https://rimworldwiki.com/images/8/8a/Armchair.png",
+      "sha256": "3d118bf2bfda35561cee73e4d99f1fd14f5a4db73e90cabd3f5f408380cd025d"
+    },
+    {
+      "file": "Baby_decoration.png",
+      "page": "https://rimworldwiki.com/wiki/Baby_decoration",
+      "image": "https://rimworldwiki.com/images/9/9e/Baby_decoration_a.png",
+      "sha256": "fe38174e89591e3260c4fa08191ebaa0278e2300664e2d56b45f4d377d344f7f"
+    },
+    {
+      "file": "Baby_sleeping_spot.png",
+      "page": "https://rimworldwiki.com/wiki/Baby_sleeping_spot",
+      "image": "https://rimworldwiki.com/images/2/20/BabySleepingSpot.png",
+      "sha256": "9fd825a3dde7c62d93d12bd7fca27b487f8c7d58badca491fd2e6b519c6a823a"
+    },
+    {
+      "file": "Bed.png",
+      "page": "https://rimworldwiki.com/wiki/Bed",
+      "image": "https://rimworldwiki.com/images/c/c5/Bed.png",
+      "sha256": "e9e8572198c8a88d3f75fda96f4b9b0b908f62474ce418a75ccea370d9c419fe"
+    },
+    {
+      "file": "Bedroll.png",
+      "page": "https://rimworldwiki.com/wiki/Bedroll",
+      "image": "https://rimworldwiki.com/images/d/d8/Bedroll.png",
+      "sha256": "754258024552dd096bb79f5383f27cb022a5325008d4ca02ea2317fdfb5efce4"
+    },
+    {
+      "file": "Blackboard.png",
+      "page": "https://rimworldwiki.com/wiki/Blackboard",
+      "image": "https://rimworldwiki.com/images/c/c6/Blackboard.png",
+      "sha256": "06dfeefbf74b981805e50db459e6608d4aa5d13638d18ba118b0319a9a45faf5"
+    },
+    {
+      "file": "Blood_torch.png",
+      "page": "https://rimworldwiki.com/wiki/Blood_torch",
+      "image": "https://rimworldwiki.com/images/a/ad/Blood_torch.png",
+      "sha256": "7c573e59d5f84c5cdea66afd7357f758782a6c821a778b9ef44de574e7f2ee68"
+    },
+    {
+      "file": "Bonsai_pot.png",
+      "page": "https://rimworldwiki.com/wiki/Bonsai_pot",
+      "image": "https://rimworldwiki.com/images/3/37/Bonsai_pot.png",
+      "sha256": "6c91f0658bca4f4879442d468e3cd39e0b2ea714f0ab912ee73dc63cb52246a8"
+    },
+    {
+      "file": "Bookcase.png",
+      "page": "https://rimworldwiki.com/wiki/Bookcase",
+      "image": "https://rimworldwiki.com/images/7/7d/Bookcase_south.png",
+      "sha256": "449428ce73012408d2e15897133eb81eac241ad6dc8a472d34ff9d4d77330f28"
+    },
+    {
+      "file": "Brazier.png",
+      "page": "https://rimworldwiki.com/wiki/Brazier",
+      "image": "https://rimworldwiki.com/images/b/b0/Brazier.png",
+      "sha256": "a13e52c194d0d2855cebb7696ea52129b75e9d52f4fe0cc8e1a95e780b4899bb"
+    },
+    {
+      "file": "Couch.png",
+      "page": "https://rimworldwiki.com/wiki/Couch",
+      "image": "https://rimworldwiki.com/images/8/88/Couch_south.png",
+      "sha256": "9f2ced870f2d4a2df643259eddcf007388967f03924837b181499b7beb652933"
+    },
+    {
+      "file": "Crib.png",
+      "page": "https://rimworldwiki.com/wiki/Crib",
+      "image": "https://rimworldwiki.com/images/c/cd/Crib.png",
+      "sha256": "eb6f14d8d40cb2ab7c79b2e4adf1c04536684008e256d85504f8760fd03871f9"
+    },
+    {
+      "file": "Darklight_brazier.png",
+      "page": "https://rimworldwiki.com/wiki/Darklight_brazier",
+      "image": "https://rimworldwiki.com/images/b/bd/Darklight_brazier.png",
+      "sha256": "53de230e8282f74a05fee16cd42f8eb1f71253809a0aca11d248874fe836d0ff"
+    },
+    {
+      "file": "Darktorch.png",
+      "page": "https://rimworldwiki.com/wiki/Darktorch",
+      "image": "https://rimworldwiki.com/images/6/60/Darktorch.png",
+      "sha256": "ded2659c061bcf7bc0440475e23857dbefda73db973d9d1ffcdce865de3772e8"
+    },
+    {
+      "file": "Dining_chair.png",
+      "page": "https://rimworldwiki.com/wiki/Dining_chair",
+      "image": "https://rimworldwiki.com/images/9/9f/Dining_chair_south.png",
+      "sha256": "cb166620f26395acf23a4ab037416b2b2050f2869c5ad45cb889670d0cc8db65"
+    },
+    {
+      "file": "Dining_chair_east.png",
+      "page": "https://rimworldwiki.com/wiki/Dining_chair",
+      "image": "https://rimworldwiki.com/images/9/9a/Dining_chair_east.png",
+      "sha256": "4e19c98a238b55b97f49acb002f2ca56847edc51ab03f3e81c5979e2140e2744"
+    },
+    {
+      "file": "Dining_chair_north.png",
+      "page": "https://rimworldwiki.com/wiki/Dining_chair",
+      "image": "https://rimworldwiki.com/images/2/27/Dining_chair_north.png",
+      "sha256": "1413f9485acbcba748f37ef753ea26e93bfea65214d888207a174ba1c0130e1e"
+    },
+    {
+      "file": "Double_bed.png",
+      "page": "https://rimworldwiki.com/wiki/Double_bed",
+      "image": "https://rimworldwiki.com/images/5/5b/Double_bed.png",
+      "sha256": "5db059ab82486ac02be808a50da8088dfb9e850772bb5afcc0fd288adca3181c"
+    },
+    {
+      "file": "Double_bedroll.png",
+      "page": "https://rimworldwiki.com/wiki/Double_bedroll",
+      "image": "https://rimworldwiki.com/images/c/c1/Double_bedroll.png",
+      "sha256": "639d507cee5f2c2b4aa3a955a0a8b8c6eddac48b6b0487fcfce3f73078a8aea0"
+    },
+    {
+      "file": "Double_sleeping_spot.png",
+      "page": "https://rimworldwiki.com/wiki/Double_sleeping_spot",
+      "image": "https://rimworldwiki.com/images/0/0c/Double_sleeping_spot.png",
+      "sha256": "e354752bb71c31929b9a189a6117b50b06cff1776fa00cc9ed7c5cda7094d806"
+    },
+    {
+      "file": "Drape.png",
+      "page": "https://rimworldwiki.com/wiki/Drape",
+      "image": "https://rimworldwiki.com/images/e/e1/Drape.png",
+      "sha256": "06994b0ae89564909ef83b28577a8d2e7eca872f396bf3d6dfe6dbdc7f8a8740"
+    },
+    {
+      "file": "Dresser.png",
+      "page": "https://rimworldwiki.com/wiki/Dresser",
+      "image": "https://rimworldwiki.com/images/e/ec/Dresser_south.png",
+      "sha256": "0c0e3130898f1b51a04a4f1d4dbf1b87ccf3a79c0b1a9fc06b41fa5c5ed6ff2c"
+    },
+    {
+      "file": "Dresser_east.png",
+      "page": "https://rimworldwiki.com/wiki/Dresser",
+      "image": "https://rimworldwiki.com/images/4/4d/Dresser_east.png",
+      "sha256": "dfee69e14594fe9ba2af4409c4a5b135d9013979e0ea878e84ed814aee53e4b9"
+    },
+    {
+      "file": "Dresser_north.png",
+      "page": "https://rimworldwiki.com/wiki/Dresser",
+      "image": "https://rimworldwiki.com/images/f/f4/Dresser_north.png",
+      "sha256": "5295fc5180100a928c9d8ffb04173c2002b0c6901c707785159f377febeac9d2"
+    },
+    {
+      "file": "End_table.png",
+      "page": "https://rimworldwiki.com/wiki/End_table",
+      "image": "https://rimworldwiki.com/images/3/34/End_table.png",
+      "sha256": "4c05a6f42c2c99b261e6d4f1e1a980dba91a7200f0df94fde14cf0a97b563a4e"
+    },
+    {
+      "file": "Flood_light.png",
+      "page": "https://rimworldwiki.com/wiki/Flood_light",
+      "image": "https://rimworldwiki.com/images/6/61/Flood_Light.png",
+      "sha256": "663e54eefb36737f3c03dd8c5a9257d640e0847377f4763058090ec7ebaa245f"
+    },
+    {
+      "file": "Fungus_darktorch.png",
+      "page": "https://rimworldwiki.com/wiki/Fungus_darktorch",
+      "image": "https://rimworldwiki.com/images/2/2b/Fungus_darktorch.png",
+      "sha256": "b11fd12c51c0ca8e54d90331c91329f3b55fd7fca5511a03bfd687db87a9a2af"
+    },
+    {
+      "file": "Grand_meditation_throne.png",
+      "page": "https://rimworldwiki.com/wiki/Grand_meditation_throne",
+      "image": "https://rimworldwiki.com/images/8/84/Grandthrone.png",
+      "sha256": "f8e67f89c0e71b47573342eea3e76a9c3f9bf852ea8652fe74dd01b6560c75a0"
+    },
+    {
+      "file": "Grand_sculpture.png",
+      "page": "https://rimworldwiki.com/wiki/Grand_sculpture",
+      "image": "https://rimworldwiki.com/images/d/dd/Sculpture_grand_abstract_a.png",
+      "sha256": "ac249fda3c116b15c1ade6bba13100985100fe1a7ad681aa0bfa0fc1466c2eeb"
+    },
+    {
+      "file": "Hospital_bed.png",
+      "page": "https://rimworldwiki.com/wiki/Hospital_bed",
+      "image": "https://rimworldwiki.com/images/0/0a/Hospital_bed_south.png",
+      "sha256": "ea67463727ffa748b388cdcd2568e4af238420bcf7b0ad87c9db128e65a1daa2"
+    },
+    {
+      "file": "Hospital_bed_east.png",
+      "page": "https://rimworldwiki.com/wiki/Hospital_bed",
+      "image": "https://rimworldwiki.com/images/3/3e/Hospital_bed_east.png",
+      "sha256": "03b89ee08de4c9beb53859b828cbe614e73a792c8ceb56ef226745ab2f42efca"
+    },
+    {
+      "file": "Hospital_bed_north.png",
+      "page": "https://rimworldwiki.com/wiki/Hospital_bed",
+      "image": "https://rimworldwiki.com/images/5/51/Hospital_bed_north.png",
+      "sha256": "8cf16945609041107fae8878badd87bcd08acab662cebf5e41f32fbfe11a974d"
+    },
+    {
+      "file": "Kid_outfit_stand_east.png",
+      "page": "https://rimworldwiki.com/wiki/Outfit_stand",
+      "image": "https://rimworldwiki.com/images/1/15/Outfit_Stand_Kid_East.png",
+      "sha256": "60b6f2fe9efbde98019057f27a9df2edce173f62558686ede187aa0e0f168ec1"
+    },
+    {
+      "file": "Kid_outfit_stand_north.png",
+      "page": "https://rimworldwiki.com/wiki/Outfit_stand",
+      "image": "https://rimworldwiki.com/images/e/e9/Outfit_Stand_Kid_North.png",
+      "sha256": "2bd10008108230296460d91dd600091d31f3aa634b4f4ba33bd7f617817cc2f2"
+    },
+    {
+      "file": "Kid_outfit_stand_south.png",
+      "page": "https://rimworldwiki.com/wiki/Outfit_stand",
+      "image": "https://rimworldwiki.com/images/5/5c/Outfit_Stand_Kid_South.png",
+      "sha256": "f75364410734d74ea6d1155074d6ea888257a948dc24a2aec993d295a035f3cb"
+    },
+    {
+      "file": "Kid_outfit_stand_west.png",
+      "page": "https://rimworldwiki.com/wiki/Outfit_stand",
+      "image": "https://rimworldwiki.com/images/a/a7/Outfit_Stand_Kid_West.png",
+      "sha256": "ec3e09418eafe364f7d4defd0958c3b7032f56aa206f434e5b7d8f09b0a36aec"
+    },
+    {
+      "file": "Large_sculpture.png",
+      "page": "https://rimworldwiki.com/wiki/Large_sculpture",
+      "image": "https://rimworldwiki.com/images/3/35/Sculpture_large_abstract_a.png",
+      "sha256": "9a7b5ac23e7920606de0471401671790ce5ab4cc973bf17cb127c2e1a7b62d6e"
+    },
+    {
+      "file": "Meditation_throne.png",
+      "page": "https://rimworldwiki.com/wiki/Meditation_throne",
+      "image": "https://rimworldwiki.com/images/1/15/Throne_south.png",
+      "sha256": "b1d47ef6c0787b0b31770517a3308e19c94335c5993b112b4b2ea400e6f32f0c"
+    },
+    {
+      "file": "Outfit_stand.png",
+      "page": "https://rimworldwiki.com/wiki/Outfit_stand",
+      "image": "https://rimworldwiki.com/images/2/22/Outfit_stand_south.png",
+      "sha256": "95f2b44f8795cb9e8869e321fbc8c78449dc4883dfff86363908de065dc0419d"
+    },
+    {
+      "file": "Outfit_stand_east.png",
+      "page": "https://rimworldwiki.com/wiki/Outfit_stand",
+      "image": "https://rimworldwiki.com/images/c/c3/Outfit_Stand_East.png",
+      "sha256": "fb23d3278bbc9ee1a0dfa94bb740c93dcbe489a47a2c0b13b26688cb63f04e2e"
+    },
+    {
+      "file": "Outfit_stand_north.png",
+      "page": "https://rimworldwiki.com/wiki/Outfit_stand",
+      "image": "https://rimworldwiki.com/images/5/5b/Outfit_Stand_North.png",
+      "sha256": "39e59d6fb3912fb7d0a293e75bbb36f661c393ce074998770ef6f2531cdde14d"
+    },
+    {
+      "file": "Outfit_stand_south.png",
+      "page": "https://rimworldwiki.com/wiki/Outfit_stand",
+      "image": "https://rimworldwiki.com/images/2/22/Outfit_stand_south.png",
+      "sha256": "95f2b44f8795cb9e8869e321fbc8c78449dc4883dfff86363908de065dc0419d"
+    },
+    {
+      "file": "Plant_pot.png",
+      "page": "https://rimworldwiki.com/wiki/Plant_pot",
+      "image": "https://rimworldwiki.com/images/d/d4/Plant_pot.png",
+      "sha256": "9d56f13858092a491e32120287959af399e3eb99265e1b4d93ef0fdc1299c722"
+    },
+    {
+      "file": "Royal_bed.png",
+      "page": "https://rimworldwiki.com/wiki/Royal_bed",
+      "image": "https://rimworldwiki.com/images/a/ac/Royal_bed_south.png",
+      "sha256": "f04f816c87ed91660bf54ecb7d549d079924f9b34a51d57679f6f9252cbacaab"
+    },
+    {
+      "file": "Royal_bed_east.png",
+      "page": "https://rimworldwiki.com/wiki/Royal_bed",
+      "image": "https://rimworldwiki.com/images/5/5d/Royal_bed_east.png",
+      "sha256": "72a13de09d6171051e25581d8c2be42301489c833599019315289dc5b12890f9"
+    },
+    {
+      "file": "Royal_bed_north.png",
+      "page": "https://rimworldwiki.com/wiki/Royal_bed",
+      "image": "https://rimworldwiki.com/images/c/c0/Royal_bed_north.png",
+      "sha256": "c9ea32ac0a6836348c10ccfa5d2b63343fa6839e213150793fceab75229a2072"
+    },
+    {
+      "file": "School_desk.png",
+      "page": "https://rimworldwiki.com/wiki/School_desk",
+      "image": "https://rimworldwiki.com/images/1/12/Lesson_desk_south.png",
+      "sha256": "0463bb02aefc83de6b3cb107e2bd5a6ed3ee49503baf42ad67d4d4dc115f2ef3"
+    },
+    {
+      "file": "Shelf.png",
+      "page": "https://rimworldwiki.com/wiki/Shelf",
+      "image": "https://rimworldwiki.com/images/0/0a/Shelf_south.png",
+      "sha256": "be86f02cf4f1f3ad10b5ae0c8d6d64ea946e05491b04df1ec00caf0efd83e83c"
+    },
+    {
+      "file": "Shelf_east.png",
+      "page": "https://rimworldwiki.com/wiki/Shelf",
+      "image": "https://rimworldwiki.com/images/0/0e/Shelf_east.png",
+      "sha256": "68f8313659f892159240adeabaff3ce19820dc4aeaf5a8e1dd75c20091944f2f"
+    },
+    {
+      "file": "Shelf_north.png",
+      "page": "https://rimworldwiki.com/wiki/Shelf",
+      "image": "https://rimworldwiki.com/images/b/b9/Shelf_north.png",
+      "sha256": "9771f2b8146078a384ce070c933c1adfce252e0120d5d4bcda123f2ad827155d"
+    },
+    {
+      "file": "Slab_bed.png",
+      "page": "https://rimworldwiki.com/wiki/Slab_bed",
+      "image": "https://rimworldwiki.com/images/e/eb/Slab_bed.png",
+      "sha256": "49228813811ca98ba1e655efd409f9d91b5fa972ba52243d9621336fee4d9784"
+    },
+    {
+      "file": "Slab_double_bed.png",
+      "page": "https://rimworldwiki.com/wiki/Slab_double_bed",
+      "image": "https://rimworldwiki.com/images/6/66/Slab_double_bed.png",
+      "sha256": "79c83835703eef8cde035f487dcf2411b72e251c3a5b7647b9ea4618b070f29b"
+    },
+    {
+      "file": "Sleeping_spot.png",
+      "page": "https://rimworldwiki.com/wiki/Sleeping_spot",
+      "image": "https://rimworldwiki.com/images/f/f9/Sleeping_spot.png",
+      "sha256": "500a92748639d848f5cd31fe0266ca316a8cbe1fcce01c16fba27728ca035135"
+    },
+    {
+      "file": "Small_bookcase.png",
+      "page": "https://rimworldwiki.com/wiki/Small_bookcase",
+      "image": "https://rimworldwiki.com/images/f/f1/Bookcase_small_south.png",
+      "sha256": "02c4b07d1c5e1448a2e6f3ae831e89f8e51cba052a0b9efc2cff264d80e081a2"
+    },
+    {
+      "file": "Small_sculpture.png",
+      "page": "https://rimworldwiki.com/wiki/Small_sculpture",
+      "image": "https://rimworldwiki.com/images/a/a2/Sculpture_small_abstract_a.png",
+      "sha256": "c7154ec2ee88c3a2d4f52b39a797801607561fa165a8600ca0ff138a4dce78d6"
+    },
+    {
+      "file": "Small_shelf.png",
+      "page": "https://rimworldwiki.com/wiki/Small_shelf",
+      "image": "https://rimworldwiki.com/images/d/dd/ShelfSmall_south.png",
+      "sha256": "0cdceaa5bc58e7cfabacab26c4ceea48b8b39347a07d89d640b96580f7d1ed2e"
+    },
+    {
+      "file": "Standing_lamp.png",
+      "page": "https://rimworldwiki.com/wiki/Standing_lamp",
+      "image": "https://rimworldwiki.com/images/5/56/Standing_lamp.png",
+      "sha256": "641710cad49ba2588af6dcb94e33ceeef77fd9bf4ecf97efab57b1d6526adf5f"
+    },
+    {
+      "file": "Stool.png",
+      "page": "https://rimworldwiki.com/wiki/Stool",
+      "image": "https://rimworldwiki.com/images/1/15/Stool_north.png",
+      "sha256": "61a527887cb6a25e489275626f295b5759913e947e70ae30c53c69e67da951d9"
+    },
+    {
+      "file": "Stool_east.png",
+      "page": "https://rimworldwiki.com/wiki/Stool",
+      "image": "https://rimworldwiki.com/images/d/de/Stool_east.png",
+      "sha256": "33f7676e43e260f01bed084309195ec050ac5c164bc745265a2bf4a58e7391c5"
+    },
+    {
+      "file": "Sun_lamp.png",
+      "page": "https://rimworldwiki.com/wiki/Sun_lamp",
+      "image": "https://rimworldwiki.com/images/f/f3/LampSun.png",
+      "sha256": "ba4b14d553705fc5a7d26c015b0a6ffef7fe1381675a219ddd24ccac90a476f5"
+    },
+    {
+      "file": "Table_(1x2).png",
+      "page": "https://rimworldwiki.com/wiki/Table_(1x2)",
+      "image": "https://rimworldwiki.com/images/e/ec/Table1x2_north.png",
+      "sha256": "aa132831253485c2a4f080a0eaa4ff72ae9d45da94024f8e2db90ae146cc60b8"
+    },
+    {
+      "file": "Table_(1x2)_east.png",
+      "page": "https://rimworldwiki.com/wiki/Table_(1x2)",
+      "image": "https://rimworldwiki.com/images/e/eb/Table1x2_east.png",
+      "sha256": "8b0e345e5bd0d98d51e96b995d03a9de2b833047457b8e5854c507468c38c05b"
+    },
+    {
+      "file": "Table_(2x2).png",
+      "page": "https://rimworldwiki.com/wiki/Table_(2x2)",
+      "image": "https://rimworldwiki.com/images/b/b9/Table2x2_north.png",
+      "sha256": "64e05b57427393b38fd573d6f6d8e9e6787aa3aae2d9a69a6b3ce5e1e4efa7e9"
+    },
+    {
+      "file": "Table_(2x4).png",
+      "page": "https://rimworldwiki.com/wiki/Table_(2x4)",
+      "image": "https://rimworldwiki.com/images/7/7e/Table2x4_north.png",
+      "sha256": "cbefd023848eb57b3619ed2e50100133c9a312a898f1c530fbc803c17d8e5f07"
+    },
+    {
+      "file": "Table_(2x4)_east.png",
+      "page": "https://rimworldwiki.com/wiki/Table_(2x4)",
+      "image": "https://rimworldwiki.com/images/d/d3/Table2x4_east.png",
+      "sha256": "b01d88c227cc5e5bd3b1809c20a59248d2413148990b90c7eea904bd02aa4043"
+    },
+    {
+      "file": "Table_(3x3).png",
+      "page": "https://rimworldwiki.com/wiki/Table_(3x3)",
+      "image": "https://rimworldwiki.com/images/5/57/Table3x3_north.png",
+      "sha256": "a1ba4d951879ffbc4a014920e2f17b72f2e6ab4b48c74dd5a7251db70dd761c9"
+    },
+    {
+      "file": "Terror_sculpture.png",
+      "page": "https://rimworldwiki.com/wiki/Terror_sculpture",
+      "image": "https://rimworldwiki.com/images/2/20/Terror_sculpture.png",
+      "sha256": "a656eee2f421f659c31728465d4c43241b50c845870d4cda7b1347733726a4c2"
+    },
+    {
+      "file": "Torch_lamp.png",
+      "page": "https://rimworldwiki.com/wiki/Torch_lamp",
+      "image": "https://rimworldwiki.com/images/2/23/Torch_lamp.png",
+      "sha256": "013e0eb8b7edee8de5e5bfed60c8e3ea59a0e576bfb87f10e503a5d721a2ff03"
+    },
+    {
+      "file": "Toy_box.png",
+      "page": "https://rimworldwiki.com/wiki/Toy_box",
+      "image": "https://rimworldwiki.com/images/b/b1/Toy_Box.png",
+      "sha256": "8b0659fae86ade1923ee1447b009a847096803725cfe044c22cfb23f506e071e"
+    },
+    {
+      "file": "Urn.png",
+      "page": "https://rimworldwiki.com/wiki/Urn",
+      "image": "https://rimworldwiki.com/images/0/06/Urn.png",
+      "sha256": "e37155283b11c8f42bfca6b6c01d09868b39a768229fe47d268808c73a52d7e1"
+    },
+    {
+      "file": "Wall_lamp.png",
+      "page": "https://rimworldwiki.com/wiki/Wall_lamp",
+      "image": "https://rimworldwiki.com/images/d/d8/Wall_lamp.png",
+      "sha256": "871de4e8ba362549448fc0044153dca464a74446da9322c50a4addc22ebaca97"
+    },
+    {
+      "file": "Wall_torch_lamp.png",
+      "page": "https://rimworldwiki.com/wiki/Wall_torch_lamp",
+      "image": "https://rimworldwiki.com/images/a/aa/Wall_torch_lamp.png",
+      "sha256": "690e8756516a13a64ff58112b6ed414343d1d4af8aeaa1db217b5833863eb0e3"
+    }
+  ]
+}

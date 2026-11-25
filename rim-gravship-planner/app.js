@@ -93,13 +93,13 @@ for(const group of componentGroupOrder){
   for(const c of COMPONENTS.filter(c=>c.group===group)){
     const b=document.createElement('button');b.className='palette-item component-item';b.dataset.layer=c.id;b.dataset.group=group;
     b.title=`${c.name}. ${componentInfo(c)}${c.limit?' Maximum '+c.limit+'.':' No stated ship-wide limit.'}`;
-    b.innerHTML=`<img loading="lazy" src="assets/${c.icon||componentSprite({type:c.id,rotation:0}).file}" alt=""><div><strong>${c.name}</strong><small>${c.width} × ${c.height} · ${c.limit?'max. '+c.limit:'no stated limit'}${c.chapter?' · Ch. '+c.chapter:''}</small></div><span class="component-quantity">0</span>`;
+    b.innerHTML=`<img loading="lazy" src="assets/${c.icon||componentSprite({type:c.id,rotation:0}).file}" alt=""><div><strong>${c.name}</strong><small>${c.width} × ${c.height} · ${c.limit?'max. '+c.limit:'no stated limit'}${c.chapter?' · Ch. '+c.chapter:''}${c.requiresDlc?' · '+c.requiresDlc:''}</small></div><span class="component-quantity">0</span>`;
     b.onclick=()=>{chooseLayer(c.id);collapsePaletteOnNarrowScreen();};category.append(b);
   }
 }
 function filterComponents(){
   const query=$('component-search').value.trim().toLowerCase();let visible=0;
-  document.querySelectorAll('.component-item').forEach(b=>{const d=componentDefinition(b.dataset.layer,state);b.hidden=!componentEnabled(state,d)||!d.name.toLowerCase().includes(query);if(!b.hidden)visible++;});
+  document.querySelectorAll('.component-item').forEach(b=>{const d=componentDefinition(b.dataset.layer,state);b.hidden=!componentEnabled(state,d)||![d.name,b.dataset.group,d.requiresDlc||''].join(' ').toLowerCase().includes(query);if(!b.hidden)visible++;});
   document.querySelectorAll('.component-group').forEach(group=>{group.hidden=![...document.querySelectorAll('.component-item')].some(b=>b.dataset.group===group.dataset.group&&!b.hidden);if(query)group.open=true;});
   $('no-components').hidden=visible>0;
 }
@@ -129,7 +129,7 @@ function refreshModControls(){
     const group=mods.chapter1&&modPaletteGroups[d.id]||d.group;
     if(b.dataset.group!==group){b.dataset.group=group;componentGroups.get(group).append(b);}
     if(strong)strong.textContent=d.name;
-    if(small)small.textContent=`${d.width} × ${d.height} · ${d.limit?'max. '+d.limit:'no stated limit'}${d.chapter?' · Ch. '+d.chapter:''}`;
+    if(small)small.textContent=`${d.width} × ${d.height} · ${d.limit?'max. '+d.limit:'no stated limit'}${d.chapter?' · Ch. '+d.chapter:''}${d.requiresDlc?' · '+d.requiresDlc:''}`;
     if(im)im.src=`assets/${d.icon||componentSprite({type:d.id,rotation:0},state).file}`;
     b.title=componentInfo(d);
   });
@@ -234,7 +234,7 @@ const support=capacityDetails(state);
 $('capacity-note').textContent=state.engine?`${Math.max(0,support.total-state.floor.length).toLocaleString()} tiles available${normalizeMods(state.mods).chapter1?` · (${support.base} + ${support.bonus}) × ${Number(support.multiplier.toFixed(2))}${state.scaffold?.length?` · ${state.scaffold.length} free subscaffold`:''}`:''}`:`Place an engine to support ${engineProfile(state).support} tiles.`;
 const checks=[];checks.push([!state.engine,state.engine?'Grav engine placed':'Place one grav engine to begin.']);if(validation.disabledTerrain.length)checks.push([true,'Subscaffold requires Chapter 1.']);if(validation.disabledEngine)checks.push([true,'The saved engine variant requires Chapter 1. Vanilla engine rules are active.']);if(validation.overlappingStructures.length)checks.push([true,`${validation.overlappingStructures.length} tiles contain overlapping structures.`]);if(state.engine){checks.push([validation.missing.length,validation.missing.length?`${validation.missing.length} structure tiles need substructure (marked red).`:'All structures have substructure.']);checks.push([validation.disconnected.length,validation.disconnected.length?`${validation.disconnected.length} floor tiles disconnected from engine.`:'All floor tiles connect to the engine.']);checks.push([validation.outsideTiles.length,validation.outsideTiles.length?`${validation.outsideTiles.length} tiles have unsupported field placement (marked red).`:'All placed tiles and components have field support.']);checks.push([validation.over,validation.over?`${validation.over} tiles exceed capacity.`:'Within supported tile capacity.']);if(validation.invalidExtenders.length)checks.push([true,'Extenders must be within the original engine field.']);}if(state.engine&&(state.components||[]).length){
 checks.push([validation.blockedExhaust.length,validation.blockedExhaust.length?`${validation.blockedExhaust.length} thruster clearance tiles obstructed.`:'Thruster clearance is clear.']);
-if(validation.missingWall.length)checks.push([true,`${validation.missingWall.length} oxygen pumps need a hull tile.`]);
+if(validation.missingWall.length)checks.push([true,`${validation.missingWall.length} wall-mounted components need a hull tile.`]);
 if(validation.blockedPumps.length)checks.push([true,`${validation.blockedPumps.length} oxygen pumps face hull. Rotate them toward a non-hull tile.`]);
 if(validation.outsideComponents.length)checks.push([true,`${validation.outsideComponents.length} components outside their supported field.`]);
 if(validation.overLimits.length)checks.push([true,'Component limits exceeded in this saved design.']);
@@ -559,7 +559,7 @@ function loadHullTextures(){
 function loadComponentAssets(){
   const signature=JSON.stringify([state.mods,state.engineType,[...new Set((state.components||[]).map(c=>c.type))].sort(),!!state.scaffold?.length]);
   if(assetSignature===signature)return;assetSignature=signature;
-  const files=new Set([...availableComponents(state).filter(d=>!d.chapter),...(state.components||[]).map(c=>componentDefinition(c.type,state)),engineProfile(state),extenderProfile(state)].flatMap(d=>[...Object.values(d.sprites),...Object.values(d.topSprites||{}),d.topSprite].filter(Boolean)));
+  const files=new Set([...availableComponents(state).filter(d=>!d.chapter&&d.group!=='Furniture'),...(state.components||[]).map(c=>componentDefinition(c.type,state)),engineProfile(state),extenderProfile(state)].flatMap(d=>[...Object.values(d.sprites),...Object.values(d.topSprites||{}),d.topSprite].filter(Boolean)));
   if(normalizeMods(state.mods).chapter1||state.scaffold?.length)files.add('mods/chapter1/Things/Terrain/Substructure/Subscaffolding.png');
   for(const file of files)loadImage(file);
 }

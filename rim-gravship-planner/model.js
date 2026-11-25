@@ -140,7 +140,7 @@ export function checkPlacement(s,layer,k,rotation=0,{ignore=null,tiles=null}={})
     if(components.length>=2000&&!existingPipe)return fail('A design can contain at most 2,000 components.');
     if(foot.some(k=>{const [x,y]=point(k);return Math.abs(x)>110||Math.abs(y)>110;}))return fail('Keep the full component within the planning grid.');
     missingSupport=foot.some(k=>!s.floor.includes(k));
-    if(def.wallMounted&&!hasHull(k))return fail('Oxygen pumps must be mounted on a hull tile.');
+    if(def.wallMounted&&!hasHull(k))return fail(`${def.name} must be mounted on a hull tile.`);
     if(layer==='oxygen-pump'||layer==='VGE_IndustrialOxygenPump'){
       const front=pumpMount(c).facingTile;
       if(hasHull(key(front.x,front.y)))return fail('Rotate the oxygen pump to face a non-hull tile.');
