@@ -6,6 +6,7 @@ import {modOverride,componentEnabled} from './mods.js';
 const astrofuelSprites=MOD_COMPONENTS.find(c=>c.id==='VGE_AstrofuelPipe').sprites;
 // Planner-only presentation: show hidden pipe runs using the shared linked art.
 function plannerComponent(c){
+  if(c.systems?.range>0)return {...c,group:'Flight'};
   if(c.id==='VGE_GravshipCapacitor')return {...c,group:'Power'};
   if(c.id==='VGE_AstrofuelPipe')return {...c,paintable:true};
   if(c.id==='VGE_HiddenAstrofuelPipe')return {...c,paintable:true,atlas:true,sprites:astrofuelSprites,spriteAlpha:.55};
