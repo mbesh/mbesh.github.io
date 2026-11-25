@@ -217,6 +217,7 @@ if(selected){
   $('tool-hint').textContent=erase?'Click any tile of this component to remove it. Substructure stays in place.':`Click to place one component; the pointer anchors its top-left tile. ${selected.rotate?'Q / E or the buttons rotate before placing. ':''}${componentInfo(selected)} All footprint tiles need substructure.`;
 }
 if(selected?.paintable)$('tool-hint').textContent=erase?'Drag to erase the selected pipe type using the drawing tools.':'Click or drag to paint pipes, or draw a line, rectangle, or circle. Astrofuel pipes and hidden astrofuel pipes connect north, east, south, and west. Existing fuel-network tiles are preserved.';
+if(layer&&!paintableLayer()&&!erase)$('tool-hint').textContent+=' With touch, drag to position and release to place and select.';
 if(layer&&!panMode)$('tool-hint').textContent+=' Outside-field and missing-substructure placements are allowed and marked red.';
 if(panMode){$('mode-label').textContent='Pan view';$('shape-label').textContent='Drag to pan · Pinch to zoom';$('tool-hint').textContent='Drag to pan without changing your design. Use two fingers to pan and pinch to zoom in any tool. Choose Pan again to return to editing.';}
 }
@@ -367,6 +368,7 @@ if(layer&&hover&&!panMode&&!touchNavigation&&!drag?.pan){
   if(brush&&!remove){const preview=new Set(actual),existing=networkTiles(def.network);for(const k of actual){if(existing?.has(k))continue;const [x,y]=point(k);drawComponent({type:layer,x,y,rotation},.6,preview);}}
   if(def&&!brush&&!remove){if($('exhaust').checked)for(const k of exhaustCells(candidate,state))tileRect(k,'#dfb47e45');drawComponent(candidate,.6);}
   if(layer==='engine'&&!remove)drawEngine(hover,.6);
+  if(layer==='extender'&&!remove){const im=assets[extenderProfile(state).sprites.south]||assets.extender;if(im){const p=screen(hover.x,hover.y);ctx.save();ctx.globalAlpha=.6;ctx.drawImage(im,p.x,p.y,zoom,zoom);ctx.restore();}}
   for(const k of actual){const supported=!placement.rejected&&(def&&!brush||layer==='extender'?valid:layer==='engine'?!placement.missingSupport:supportedField.has(k)&&(!(layer==='hull'||brush)||floorTiles.has(k)));tileRect(k,remove?'#e7907c55':supported?'#c4dbac50':'#dd766551');const [x,y]=point(k),p=screen(x,y);ctx.strokeStyle=remove||!supported?'#ff7d7d':'#cedfbc';ctx.lineWidth=1;ctx.strokeRect(p.x+.5,p.y+.5,zoom-1,zoom-1);if(measurement){measurement.minX=Math.min(measurement.minX,x);measurement.minY=Math.min(measurement.minY,y);measurement.maxX=Math.max(measurement.maxX,x);measurement.maxY=Math.max(measurement.maxY,y);}}
   if((shape==='circle'||shape==='disc')&&drag){const c=screen(drag.start.x+.5,drag.start.y+.5);ctx.fillStyle='#e2ebd4';ctx.fillRect(c.x-2,c.y-2,4,4);}
   if(measurement)drawShapeMeasurements(ctx,measurement,screen,zoom,{width,height});
@@ -462,6 +464,9 @@ canvas.onpointerdown=e=>{
     if(selection){const p=itemPosition(state,selection);drag={move:true,pointerId:e.pointerId,start:{...hover},origin:{x:p.x,y:p.y},target:{x:p.x,y:p.y}};}
     refresh();return;
   }
+  if(e.pointerType==='touch'&&!erase&&e.button===0&&!paintableLayer()){
+    drag={placing:true,pointerId:e.pointerId,start:hover,type:layer,rotation,erase:false};refresh();return;
+  }
   drag={pointerId:e.pointerId,start:hover,last:hover,erase:erase||e.button===2,before:structuredClone(state),message:''};
   if(shape==='single')applyCells([key(hover.x,hover.y)],drag.erase);refresh();
 };
@@ -492,6 +497,14 @@ canvas.onpointermove=e=>{
 function finish(e,cancel=false){
   if(!drag)return;
   if(drag.pan){drag=null;canvas.style.cursor=panMode||!layer?'grab':'crosshair';return;}
+  if(drag.placing){
+    const d=drag;drag=null;
+    if(cancel){hover=null;refresh();return;}
+    const end=e?tile(e):hover||d.start,result=apply(state,d.type,[key(end.x,end.y)],false,d.rotation);
+    if(result.rejected){hover=end;toast(result.message);refresh();return;}
+    selection=d.type==='engine'?{kind:'engine'}:d.type==='extender'?{kind:'extender',index:result.state.extenders.length-1}:{kind:'component',index:result.state.components.length-1};
+    layer=null;erase=false;hover=null;commit(result.state);refresh();return;
+  }
   if(drag.move){
     const d=drag;drag=null;
     if(cancel){refresh();return;}
