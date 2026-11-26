@@ -6,7 +6,7 @@ import {shipSystems} from './systems.js';
 import {renderSystems} from './systems-ui.js';
 import {COMPONENTS,availableComponents,componentInfo,componentDefinition,componentBounds,componentCells,componentSprite,directionalSprite,componentVisual,barrierJoins,pumpMount,exhaustCells,ROTATIONS,normalizeRotation,componentRotationLabel} from './components.js';
 import {normalizeMods,componentEnabled,engineProfile,engineOptions,extenderProfile} from './mods.js';
-import {blank,key,point,footprint,engineFootprint,capacity,capacityDetails,validate,shapeCells,apply,sanitize,inField,inEngineField,fieldCells,fieldSources,hitItem,itemPosition,itemCells,moveItem,checkPlacement,previewMove,rotateItem} from './model.js';
+import {blank,key,point,footprint,engineFootprint,capacity,capacityDetails,validate,shapeCells,apply,planErase,eraseCells,sanitize,inField,inEngineField,fieldCells,fieldSources,hitItem,itemPosition,itemCells,moveItem,checkPlacement,previewMove,rotateItem} from './model.js';
 const $=id=>document.getElementById(id),canvas=$('canvas'),ctx=canvas.getContext('2d');
 const paletteMedia=window.matchMedia?.('(max-width:1100px)');
 function collapsePaletteOnNarrowScreen(){if(paletteMedia?.matches)$('palette-panel').open=false;}
@@ -21,6 +21,9 @@ let systemsSignature=null;
 const scenarioFields=['crew','distance','fuelPercent','oxygenPercent','chargePercent','heatPercent','cabinTiles','vacuum','heatResearch'];
 let panMode=false,gesture=null,touchNavigation=false;
 const touchPointers=new Map();
+let eraseTarget='components',lastBuildLayer='engine';
+const eraseLabels={components:'components',hull:'hull / doors',floor:'substructure',all:'everything'};
+$('erase-target').value=eraseTarget;
 function updateViewportSize(){
   const style=document.documentElement?.style;
   if(!style)return;
@@ -86,7 +89,7 @@ function draft(){clearTimeout(draftTimer);draftTimer=setTimeout(()=>store(DRAFT,
 function changed(){dirty=true;draft();refresh();}
 function commit(next){if(JSON.stringify(next)===JSON.stringify(state))return;undo.push(structuredClone(state));if(undo.length>80)undo.shift();redo=[];state=next;changed();}
 function paintableLayer(type=layer){const def=componentDefinition(type,state);return !!type&&type!=='engine'&&type!=='extender'&&(!def||!!def.paintable);}
-function chooseLayer(v){if(drag)finish(null,true);panMode=false;layer=v;selection=null;erase=false;rotation=componentDefinition(v,state)?.defaultRotation??0;if(v&&!paintableLayer(v))shape='single';refresh();}
+function chooseLayer(v){if(drag)finish(null,true);panMode=false;layer=v;if(v)lastBuildLayer=v;selection=null;erase=false;rotation=componentDefinition(v,state)?.defaultRotation??0;if(v&&!paintableLayer(v))shape='single';refresh();}
 $('select-mode').onclick=()=>{chooseLayer(null);collapsePaletteOnNarrowScreen();};
 $('remove-selected').onclick=removeSelected;
 function selectionName(){
@@ -181,6 +184,7 @@ $('engine-type').onchange=()=>{
   commit(next);chooseLayer('engine');
 };
 function rotateSelected(delta){
+  if(erase)return;
   if(drag||panMode||touchNavigation)return;
   if(!layer){
     const result=rotateItem(state,selection,delta);
@@ -192,38 +196,40 @@ function rotateSelected(delta){
 }
 $('rotate').onclick=()=>rotateSelected(1);$('rotate-left').onclick=()=>rotateSelected(-1);
 $('component-rotate-left').onclick=()=>rotateSelected(-1);$('component-rotate-right').onclick=()=>rotateSelected(1);
-for(const [id,icon,label] of shapes){const b=document.createElement('button');b.dataset.shape=id;b.title=label;b.setAttribute('aria-label',label);b.innerHTML=`<span aria-hidden="true">${icon}</span>${label}`;b.onclick=()=>{shape=id;collapsePaletteOnNarrowScreen();refresh();};$('shapes').append(b);const option=document.createElement('option');option.value=id;option.textContent=label;$('shape-picker').append(option);}
+for(const [id,icon,label] of shapes){const b=document.createElement('button');b.dataset.shape=id;b.title=label;b.setAttribute('aria-label',label);b.innerHTML=`<span aria-hidden="true">${icon}</span>${label}`;b.onclick=()=>{if(drag)finish(null,true);shape=id;collapsePaletteOnNarrowScreen();refresh();};$('shapes').append(b);const option=document.createElement('option');option.value=id;option.textContent=label;$('shape-picker').append(option);}
 $('shape-picker').onchange=()=>{if(drag)finish(null,true);shape=$('shape-picker').value;refresh();};
-$('add').onclick=()=>{erase=false;refresh();};$('erase').onclick=()=>{erase=true;refresh();};
+$('add').onclick=()=>{if(drag)finish(null,true);if(!layer)chooseLayer(lastBuildLayer);erase=false;refresh();};
+$('erase').onclick=()=>{if(drag)finish(null,true);if(erase&&!panMode){erase=false;if(layer&&!paintableLayer())shape='single';hover=null;refresh();return;}erase=true;panMode=false;selection=null;hover=null;collapsePaletteOnNarrowScreen();refresh();};
+$('erase-target').onchange=()=>{if(drag)finish(null,true);eraseTarget=$('erase-target').value;hover=null;refresh();};
 for(const id of ['grid','field','issues','exhaust'])$(id).onchange=render;
 $('diagonal-hull').onchange=()=>{if($('diagonal-hull').checked)loadHullTextures();render();};
 function refresh(){toolsDirty=true;statusDirty=true;render();}
-function refreshTools(){document.querySelectorAll('[data-layer]').forEach(b=>{const selected=b.dataset.layer===layer;b.classList.toggle('active',selected);b.setAttribute('aria-pressed',selected);});document.querySelectorAll('[data-shape]').forEach(b=>{b.classList.toggle('active',b.dataset.shape===shape);b.setAttribute('aria-pressed',b.dataset.shape===shape);b.disabled=!layer||!paintableLayer()&&b.dataset.shape!=='single';});$('add').classList.toggle('active',!erase);$('erase').classList.toggle('active',erase);$('add').setAttribute('aria-pressed',!erase);$('erase').setAttribute('aria-pressed',erase);$('mode-label').textContent=`${erase?'Erase':'Place'} ${(componentDefinition(layer,state)?.name||palette.find(p=>p[0]===layer)?.[1]||'component').toLowerCase()}`;$('shape-label').textContent=shapes.find(s=>s[0]===shape)[2];$('tool-hint').textContent=erase?'Erase affects the selected palette layer. Erasing the engine also removes its extenders.':layer==='engine'?'Click to place the engine. Its center anchors the grav field.':layer==='extender'?'Place inside the engine’s original field. Adds a 17-tile field and 250 tiles of capacity.':shape==='single'?'Click or drag to paint individual tiles. Right-click to erase the selected layer.':shape==='circle'||shape==='disc'?'Drag from the center to the outermost tile. An 18-tile reach matches the engine field; 16 matches an extender.':'Drag between two tiles. Release to draw the shape.';
+function refreshTools(){document.querySelectorAll('[data-layer]').forEach(b=>{const selected=!erase&&b.dataset.layer===layer;b.classList.toggle('active',selected);b.setAttribute('aria-pressed',selected);});document.querySelectorAll('[data-shape]').forEach(b=>{b.classList.toggle('active',b.dataset.shape===shape);b.setAttribute('aria-pressed',b.dataset.shape===shape);b.disabled=!erase&&(!layer||!paintableLayer()&&b.dataset.shape!=='single');});$('add').classList.toggle('active',!erase);$('erase').classList.toggle('active',erase);$('add').setAttribute('aria-pressed',!erase);$('erase').setAttribute('aria-pressed',erase);$('mode-label').textContent=`${erase?'Erase':'Place'} ${(componentDefinition(layer,state)?.name||palette.find(p=>p[0]===layer)?.[1]||'component').toLowerCase()}`;$('shape-label').textContent=shapes.find(s=>s[0]===shape)[2];$('tool-hint').textContent=erase?'Erase affects the selected palette layer. Erasing the engine also removes its extenders.':layer==='engine'?'Click to place the engine. Its center anchors the grav field.':layer==='extender'?'Place inside the engine’s original field. Adds a 17-tile field and 250 tiles of capacity.':shape==='single'?'Click or drag to paint individual tiles. Right-click to erase the selected layer.':shape==='circle'||shape==='disc'?'Drag from the center to the outermost tile. An 18-tile reach matches the engine field; 16 matches an extender.':'Drag between two tiles. Release to draw the shape.';
 refreshModControls();
 if(layer==='engine'){$('mode-label').textContent=`${erase?'Erase':'Place'} ${engineProfile(state).name.toLowerCase()}`;$('shape-label').textContent=`${engineProfile(state).width} × ${engineProfile(state).height}`;}
 if(layer==='extender')$('tool-hint').textContent=`Place in the original engine field${normalizeMods(state.mods).chapter1?' or an amplifier field':''}. Radius ${extenderProfile(state).fieldRadius}; +${extenderProfile(state).supportOffset} tiles; maximum ${extenderProfile(state).limit}.`;
 if(layer==='scaffold')$('tool-hint').textContent='Draw a walkway that connects substructure without using capacity. Buildings on subscaffold need substructure and are marked red.';
 if((shape==='circle'||shape==='disc')&&!erase)$('tool-hint').textContent=`Drag from center to edge. A ${Math.floor(engineProfile(state).fieldRadius)}-tile reach matches the engine field; ${Math.floor(extenderProfile(state).fieldRadius)} matches an extender.`;
-$('select-mode').classList.toggle('active',!layer&&!panMode);$('select-mode').setAttribute('aria-pressed',!layer&&!panMode);
-const selecting=!layer&&!panMode,name=selectionName();
+$('select-mode').classList.toggle('active',!layer&&!panMode&&!erase);$('select-mode').setAttribute('aria-pressed',!layer&&!panMode&&!erase);
+const selecting=!layer&&!panMode&&!erase,name=selectionName();
 $('drawing-toolbar').classList.toggle('selection-mode',selecting);
-$('drawing-toolbar').classList.toggle('can-draw',!panMode&&paintableLayer());
+$('drawing-toolbar').classList.toggle('can-draw',!panMode&&(erase||paintableLayer()));
 $('selection-info').hidden=!selecting;$('selection-name').textContent=name||'Select an item';$('selection-name').title=name||'Choose an item on the grid to move or remove it.';
-$('remove-selected').hidden=!selecting;$('remove-selected').disabled=!selecting||!name||touchNavigation;
+$('remove-selected').hidden=!selecting||!name;$('remove-selected').disabled=!selecting||!name||touchNavigation;
 $('remove-selected').setAttribute('aria-label',name?`Remove ${name}`:'Remove selected item');
-$('add').disabled=$('erase').disabled=!layer;
+$('add').disabled=!layer&&!erase;$('erase').disabled=false;
 $('pan-mode').classList.toggle('active',panMode);$('pan-mode').setAttribute('aria-pressed',panMode);
 $('shape-picker').value=shape;
-$('shape-picker').disabled=panMode||!paintableLayer();
-if(panMode){$('add').disabled=$('erase').disabled=true;document.querySelectorAll('[data-shape]').forEach(b=>b.disabled=true);}
-if(!layer){
+$('shape-picker').disabled=panMode||!erase&&!paintableLayer();
+if(panMode){$('add').disabled=true;document.querySelectorAll('[data-shape]').forEach(b=>b.disabled=true);}
+if(!layer&&!erase){
   $('mode-label').textContent=name?`${name} selected`:'Select / move';
   $('shape-label').textContent=name?'Drag to move · Remove selected or Delete':'Choose an item to move or remove';
   $('tool-hint').textContent='Select an item on the grid, then drag it to move or choose Remove selected. Delete / Backspace also removes the selection. Moves and removals can be undone.';
 }
-canvas.style.cursor=drag?.pan||drag?.move||touchNavigation?'grabbing':panMode?'grab':layer?'crosshair':selection?'grab':'default';
-const placed=!layer&&selection?.kind==='component'?itemPosition(state,selection):null;
-const selected=componentDefinition(layer,state),rotating=placed|| (selected?{type:layer,rotation}:null);
+canvas.style.cursor=drag?.pan||drag?.move||touchNavigation?'grabbing':panMode?'grab':erase||layer?'crosshair':selection?'grab':'default';
+const placed=!erase&&!layer&&selection?.kind==='component'?itemPosition(state,selection):null;
+const selected=erase?null:componentDefinition(layer,state),rotating=placed|| (selected?{type:layer,rotation}:null);
 const canRotate=rotating&&componentDefinition(rotating.type,state)?.rotate;
 $('rotation-controls').hidden=panMode||!!selected?.paintable||(!selected&&!canRotate);
 $('rotate').disabled=$('rotate-left').disabled=!canRotate||!!drag||touchNavigation;
@@ -246,6 +252,15 @@ if(selected?.paintable)$('tool-hint').textContent=erase?'Drag to erase the selec
 if(layer&&!paintableLayer()&&!erase)$('tool-hint').textContent+=' With touch, drag to position and release to place and select.';
 if(layer&&!panMode)$('tool-hint').textContent+=' Outside-field and missing-substructure placements are allowed and marked red.';
 if(panMode){$('mode-label').textContent='Pan view';$('shape-label').textContent='Drag to pan · Pinch to zoom';$('tool-hint').textContent='Drag to pan without changing your design. Use two fingers to pan and pinch to zoom in any tool. Choose Pan again to return to editing.';}
+$('drawing-toolbar').classList.toggle('erase-mode',erase&&!panMode);
+$('erase-target-control').hidden=$('erase-status').hidden=!erase||panMode;
+$('erase').classList.toggle('active',erase&&!panMode);$('erase').setAttribute('aria-pressed',erase&&!panMode);
+if(erase&&!panMode){
+  $('mode-label').textContent=`Erase ${eraseLabels[eraseTarget]}`;
+  $('shape-label').textContent=shapes.find(s=>s[0]===shape)[2];
+  $('tool-hint').textContent='Drag to preview, then release to erase. Touch any footprint tile to remove a whole component. Components preserves hull and substructure; Hull / doors preserves mounted items; Substructure includes subscaffold. Removing the engine also removes its extenders. Undo restores the whole drag.';
+  if(!hover||touchNavigation)$('erase-status').textContent='Drag to erase';
+}
 }
 function refreshDesign(){
 const counts=Object.fromEntries(COMPONENTS.map(c=>[c.id,0]));for(const c of state.components||[])counts[c.type]++;
@@ -382,7 +397,12 @@ if($('issues').checked)for(const k of validation.unsupportedTiles){
   tileRect(k,'#e35b5b66');const [x,y]=point(k),p=screen(x,y);
   ctx.strokeStyle='#ff7d7d';ctx.lineWidth=1.5;ctx.strokeRect(p.x+.75,p.y+.75,zoom-1.5,zoom-1.5);
 }
-if(layer&&hover&&!panMode&&!touchNavigation&&!drag?.pan){
+if(erase&&hover&&!panMode&&!touchNavigation&&!drag?.pan){
+  const points=eraseBrushCells(),plan=planErase(state,points,drag?.target||eraseTarget);
+  for(const k of points)tileRect(k,'#e7907c22');
+  for(const k of plan.cells){tileRect(k,'#e7907c66');const [x,y]=point(k),p=screen(x,y);ctx.strokeStyle='#ff9b89';ctx.lineWidth=2;ctx.strokeRect(p.x+1,p.y+1,zoom-2,zoom-2);}
+  $('erase-status').textContent=plan.count?`${plan.count} item${plan.count===1?'':'s'}${drag?' · release to erase':''}`:'Nothing to erase';
+}else if(layer&&hover&&!panMode&&!touchNavigation&&!drag?.pan){
   const def=componentDefinition(layer),brush=!!def?.paintable,remove=drag?drag.erase:erase;
   const candidate=def?{type:layer,x:hover.x,y:hover.y,rotation}:null;
   const points=drag?shapeCells(shape,drag.start,hover):[key(hover.x,hover.y)];
@@ -432,7 +452,7 @@ $('zoom-level').textContent=`${Math.round(zoom/22*100)}%`;positionRotationHandle
 function positionRotationHandles(){
   const controls=$('component-rotation-handles');
   const component=!layer&&selection?.kind==='component'?itemPosition(state,selection):null;
-  controls.hidden=!component||!componentDefinition(component.type,state)?.rotate||panMode||!!drag||touchNavigation;
+  controls.hidden=erase||!component||!componentDefinition(component.type,state)?.rotate||panMode||!!drag||touchNavigation;
   if(controls.hidden)return;
   const b=componentBounds(component,state),p=screen(b.x,b.y);
   if(p.x+b.width*zoom<0||p.x>width||p.y+b.height*zoom<0||p.y>height){controls.hidden=true;return;}
@@ -456,6 +476,11 @@ function positionRotationHandles(){
 function tileAt(x,y){return {x:Math.floor((x-width/2-offset.x)/zoom),y:Math.floor((y-height/2-offset.y)/zoom)};}
 function resize(){const r=$('board').getBoundingClientRect();width=r.width;height=r.height;const dpr=window.devicePixelRatio||1;canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);render();}new ResizeObserver(resize).observe($('board'));
 function applyCells(cells,remove){const r=apply(state,layer,cells,remove,rotation);state=r.state;if(r.rejected)drag&&(drag.message=r.message);}
+function eraseBrushCells(){
+  if(!hover)return [];
+  if(!drag?.universal)return [key(hover.x,hover.y)];
+  return drag.shape==='single'?[...drag.cells]:shapeCells(drag.shape,drag.start,hover);
+}
 function pointerWorld(e){const r=canvas.getBoundingClientRect();return {x:(e.clientX-r.left-width/2-offset.x)/zoom,y:(e.clientY-r.top-height/2-offset.y)/zoom};}
 function touchSnapshot(){
   const [a,b]=[...touchPointers.values()];
@@ -484,7 +509,8 @@ canvas.onpointerdown=e=>{
   }
   if(drag||touchNavigation)return;
   if(panMode||space||e.button===1){drag={pan:true,pointerId:e.pointerId,x:e.clientX,y:e.clientY,offset:{...offset}};canvas.style.cursor='grabbing';return;}
-  if(e.button===2&&(!layer||!hitItem(state,pointerWorld(e)))){chooseLayer(null);return;}
+  if(e.button===2&&((!layer&&!erase)||!hitItem(state,pointerWorld(e)))){chooseLayer(null);return;}
+  if(erase){drag={universal:true,erase:true,pointerId:e.pointerId,start:{...hover},last:{...hover},shape,target:eraseTarget,cells:new Set([key(hover.x,hover.y)])};refresh();return;}
   if(!layer){
     selection=hitItem(state,pointerWorld(e));
     if(selection){const p=itemPosition(state,selection);drag={move:true,pointerId:e.pointerId,start:{...hover},origin:{x:p.x,y:p.y},target:{x:p.x,y:p.y}};}
@@ -505,7 +531,7 @@ function continueStroke(e){
     drag.last=next;
   }
   if(!cells.size)return false;
-  applyCells([...cells],drag.erase);return true;
+  if(drag.universal){for(const k of cells)drag.cells.add(k);}else applyCells([...cells],drag.erase);return true;
 }
 canvas.onpointermove=e=>{
   if(touchPointers.has(e.pointerId))touchPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
@@ -523,6 +549,13 @@ canvas.onpointermove=e=>{
 function finish(e,cancel=false){
   if(!drag)return;
   if(drag.pan){drag=null;canvas.style.cursor=panMode||!layer?'grab':'crosshair';return;}
+  if(drag.universal){
+    const d=drag;
+    if(e&&!cancel){hover=tile(e);if(d.shape==='single')continueStroke(e);}
+    const cells=eraseBrushCells();drag=null;hover=null;
+    if(!cancel)commit(eraseCells(state,cells,d.target));
+    refresh();return;
+  }
   if(drag.placing){
     const d=drag;drag=null;
     if(cancel){hover=null;refresh();return;}

@@ -61,6 +61,12 @@ main{grid-template-columns:minmax(0,1fr) 270px}
 .floating-tools .segmented{margin:0}
 .floating-tools #pan-mode{min-height:44px;padding:6px 10px;font-size:12px}
 .mobile-shape,.touch-help{display:none}
+.floating-tools #erase{min-height:44px;padding:6px 10px;font-size:12px;flex-shrink:0}
+.erase-target{grid-column:1;display:flex;align-items:center;gap:8px;font-size:12px;color:#bacac3;min-width:0}
+.erase-target select{min-height:44px;min-width:0;max-width:100%;background:#2b363b;color:#d5dcd9;border:1px solid #60716b;border-radius:4px;padding:5px;font:inherit;font-size:16px}
+.erase-status{font-size:12px;color:#f0b6a6;grid-column:2;text-align:right}
+.erase-target[hidden],.erase-status[hidden]{display:none}
+.floating-tools.erase-mode .segmented{display:none}
 .selection-info{grid-column:1;grid-row:1;min-width:0}
 .selection-info span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;color:#dce6da}
 .selection-info small{display:block;margin-top:4px;font-size:11px;color:#a9beb2}
@@ -141,7 +147,12 @@ select:focus-visible{outline:2px solid #9cddce;outline-offset:3px}
   .mobile-shape{display:block;flex:1;min-width:88px}
   .mobile-shape>span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
   #shape-picker{width:100%;min-height:44px;background:#2b363b;color:#d5dcd9;border:1px solid #60716b;border-radius:4px;padding:5px;font:inherit;font-size:12px}
-  .floating-tools .tool-actions{flex:1 1 100%;order:-1;gap:6px;justify-content:flex-end}
+  .floating-tools .tool-actions{flex:1 1 100%;order:-1;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+  .erase-target{flex:1 1 120px;gap:4px 8px}
+  .floating-tools.erase-mode .mobile-shape{flex:1 1 120px;min-width:120px}
+  .erase-target>span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .erase-target select{flex:1;min-width:120px}
+  .erase-status{flex:1 1 100%;text-align:left}
   .floating-tools:not(.can-draw) .mobile-shape{display:none}
   .floating-tools.selection-mode .selection-info{flex:1 1 100%}
   .floating-tools .segmented button{min-width:44px;min-height:44px;padding:6px 8px}

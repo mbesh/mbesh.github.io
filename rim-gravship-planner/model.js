@@ -218,6 +218,37 @@ export function sanitize(raw){if(!raw||typeof raw!=='object')throw Error('Invali
   s.components=(raw.components||[]).slice(0,2000).filter(c=>c&&componentDefinition(c.type)&&validPoint(c)).map(c=>({type:c.type,x:c.x,y:c.y,rotation:normalizeRotation(c.type,c.rotation,s)}));
   return s;}
 
+// Preview and apply use the unchanged design, including every overlapping layer.
+export function planErase(s,cells,target='components'){
+  const plan={components:[],engine:false,extenders:[],hull:[],floor:[],scaffold:[],cells:[],count:0};
+  if(!['components','hull','floor','all'].includes(target))return plan;
+  const brush=new Set(cells),marked=new Set(),objects=target==='components'||target==='all';
+  const touches=foot=>foot.some(k=>brush.has(k)),mark=foot=>{for(const k of foot)marked.add(k);};
+  for(const [index,c] of (objects||target==='hull'?s.components||[]:[]).entries()){
+    const def=componentDefinition(c.type),wall=c.type==='autodoor'||!!def.hullLike;
+    const foot=componentCells(c);
+    if((objects||target==='hull'&&wall)&&touches(foot)){plan.components.push(index);mark(foot);}
+  }
+  if(objects){
+    plan.engine=!!s.engine&&touches(engineFootprint(s));
+    if(plan.engine)mark(engineFootprint(s));
+    for(const [index,e] of s.extenders.entries())if(plan.engine||brush.has(key(e.x,e.y))){plan.extenders.push(index);mark([key(e.x,e.y)]);}
+  }
+  for(const layer of target==='all'?['hull','floor','scaffold']:target==='hull'?['hull']:target==='floor'?['floor','scaffold']:[]){
+    plan[layer]=(s[layer]||[]).filter(k=>brush.has(k));mark(plan[layer]);
+  }
+  plan.cells=[...marked];
+  plan.count=plan.components.length+Number(plan.engine)+plan.extenders.length+plan.hull.length+plan.floor.length+plan.scaffold.length;
+  return plan;
+}
+export function eraseCells(s,cells,target='components'){
+  const plan=planErase(s,cells,target);if(!plan.count)return s;
+  const components=new Set(plan.components),extenders=new Set(plan.extenders);
+  const next={...s,engine:plan.engine?null:s.engine,components:plan.components.length?(s.components||[]).filter((_,i)=>!components.has(i)):s.components,extenders:plan.extenders.length?s.extenders.filter((_,i)=>!extenders.has(i)):s.extenders};
+  for(const layer of ['hull','floor','scaffold'])if(plan[layer].length){const remove=new Set(plan[layer]);next[layer]=s[layer].filter(k=>!remove.has(k));}
+  return next;
+}
+
 // Selection descriptors refer to one placed item, independently of the build palette.
 export function itemPosition(s,item){
   if(!item)return null;
