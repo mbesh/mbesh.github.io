@@ -196,7 +196,7 @@ function rotateSelected(delta){
 }
 $('rotate').onclick=()=>rotateSelected(1);$('rotate-left').onclick=()=>rotateSelected(-1);
 $('component-rotate-left').onclick=()=>rotateSelected(-1);$('component-rotate-right').onclick=()=>rotateSelected(1);
-for(const [id,icon,label] of shapes){const b=document.createElement('button');b.dataset.shape=id;b.title=label;b.setAttribute('aria-label',label);b.innerHTML=`<span aria-hidden="true">${icon}</span>${label}`;b.onclick=()=>{if(drag)finish(null,true);shape=id;collapsePaletteOnNarrowScreen();refresh();};$('shapes').append(b);const option=document.createElement('option');option.value=id;option.textContent=label;$('shape-picker').append(option);}
+for(const [id,icon,label] of shapes){const b=document.createElement('button');b.dataset.shape=id;b.title=label;b.setAttribute('aria-label',label);b.innerHTML=`<span aria-hidden="true">${icon}</span>${label}`;b.onclick=()=>{if(drag)finish(null,true);shape=id;collapsePaletteOnNarrowScreen();refresh();};$('shapes').append(b);const option=document.createElement('option');option.value=id;option.textContent=id==='filled'?'Filled rect.':label;option.title=label;$('shape-picker').append(option);}
 $('shape-picker').onchange=()=>{if(drag)finish(null,true);shape=$('shape-picker').value;refresh();};
 $('add').onclick=()=>{if(drag)finish(null,true);if(!layer)chooseLayer(lastBuildLayer);erase=false;refresh();};
 $('erase').onclick=()=>{if(drag)finish(null,true);if(erase&&!panMode){erase=false;if(layer&&!paintableLayer())shape='single';hover=null;refresh();return;}erase=true;panMode=false;selection=null;hover=null;collapsePaletteOnNarrowScreen();refresh();};
@@ -219,7 +219,7 @@ $('remove-selected').hidden=!selecting||!name;$('remove-selected').disabled=!sel
 $('remove-selected').setAttribute('aria-label',name?`Remove ${name}`:'Remove selected item');
 $('add').disabled=!layer&&!erase;$('erase').disabled=false;
 $('pan-mode').classList.toggle('active',panMode);$('pan-mode').setAttribute('aria-pressed',panMode);
-$('shape-picker').value=shape;
+$('shape-picker').value=shape;$('shape-picker').title=shapes.find(s=>s[0]===shape)[2];
 $('shape-picker').disabled=panMode||!erase&&!paintableLayer();
 if(panMode){$('add').disabled=true;document.querySelectorAll('[data-shape]').forEach(b=>b.disabled=true);}
 if(!layer&&!erase){
